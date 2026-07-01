@@ -89,55 +89,7 @@ end
 }
 ```
 
-### 1.4 NPM Package (`@prorouter/cli`)
-
-The NPM package acts as a **binary downloader and wrapper**, not a recompile. It downloads the correct platform binary on `npm install` / `npm i -g @prorouter/cli`.
-
-```json
-{
-  "name": "@prorouter/cli",
-  "version": "<version>",
-  "description": "ProRouter CLI - Universal LLM Router",
-  "bin": {
-    "prorouter": "./bin/run.js"
-  },
-  "scripts": {
-    "postinstall": "node ./scripts/download-binary.js",
-    "preuninstall": "node ./scripts/cleanup.js"
-  },
-  "optionalDependencies": {
-    "@prorouter/darwin-arm64": "<version>",
-    "@prorouter/darwin-x64": "<version>",
-    "@prorouter/linux-arm64": "<version>",
-    "@prorouter/linux-x64": "<version>",
-    "@prorouter/win32-x64": "<version>"
-  }
-}
-```
-
-**Binary Download Script (`scripts/download-binary.js`):**
-```javascript
-const { platform, arch } = process;
-const map = {
-  'darwin-arm64': '@prorouter/darwin-arm64',
-  'darwin-x64': '@prorouter/darwin-x64',
-  'linux-arm64': '@prorouter/linux-arm64',
-  'linux-x64': '@prorouter/linux-x64',
-  'win32-x64': '@prorouter/win32-x64',
-};
-
-const pkg = map[`${platform}-${arch}`];
-if (!pkg) {
-  console.error(`Unsupported platform: ${platform}-${arch}`);
-  process.exit(1);
-}
-
-const binaryPath = require.resolve(`${pkg}/bin/prorouter`);
-const fs = require('fs');
-fs.chmodSync(binaryPath, 0o755);
-```
-
-### 1.5 Docker Images
+### 1.4 Docker Images
 
 **Multi-Architecture Images:**
 - `prorouter/gateway:latest` - Gateway + Dashboard embedded
@@ -278,5 +230,4 @@ User: prorouter update
 | **Provenance** | SLSA Level 3 attestations via GitHub Actions |
 | **SBOM** | SPDX JSON attached to every release |
 | **Docker Signing** | Docker Content Trust (DCT) |
-| **NPM Signing** | npm provenance (GitHub OIDC) |
 | **Dependency Scanning** | Dependabot + Trivy in CI |

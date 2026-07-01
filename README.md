@@ -35,8 +35,8 @@ iwr https://raw.githubusercontent.com/FernandoBolzan/ProRouter/main/scripts/inst
 
 ### NPM
 ```bash
-npx @fernandobolzan/prorouter-cli serve
-```
+go run ./gateway-go serve
+
 
 ### Go Install
 ```bash

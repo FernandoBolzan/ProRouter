@@ -22,9 +22,6 @@ $dirs = @(
     "dashboard-zen\src\components\prorouter",
     "dashboard-zen\src\lib",
     "dashboard-zen\public",
-    "cli-npm\bin",
-    "cli-npm\scripts",
-    "cli-npm\src",
     "scripts",
     ".github\workflows",
     ".github\ISSUE_TEMPLATE"

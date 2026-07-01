@@ -30,20 +30,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  publish-npm:
-    needs: goreleaser
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
-      - run: |
-          TAG="${{ github.ref_name }}"
-          VERSION="${TAG#v}"
-          cd cli-npm
-          npm version "$VERSION" --no-git-tag-version
-          npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

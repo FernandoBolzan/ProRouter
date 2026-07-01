@@ -107,7 +107,7 @@ A **Recipe** defines how a request is processed before execution and how fallbac
 | **Homebrew (macOS/Linux)** | `brew install prorouter/tap/prorouter` | Dev machines |
 | **Scoop (Windows)** | `scoop install prorouter` | Dev machines (Win) |
 | **Go Install** | `go install github.com/FernandoBolzan/ProRouter/gateway-go/cmd/prorouter@latest` | Go developers |
-| **NPM / npx** | `npx prorouter serve` or `npm i -g @prorouter/cli` | JS-centric users |
+| **Docker** | `docker run -p 8080:8080 prorouter/gateway` | Production / Cloud |
 | **Docker** | `docker run -p 8080:8080 prorouter/gateway` | Production / Cloud |
 | **Binary Download** | GitHub [Releases](https://github.com/FernandoBolzan/ProRouter/releases) | Quick start |
 | **Source Build** | `git clone && make build` | Contributors |
@@ -213,7 +213,6 @@ prorouter/
 │   │   ├── ci.yml              # Test & lint on PR
 │   │   ├── release.yml         # Build and publish binaries
 │   │   ├── docker.yml          # Build and push Docker images
-│   │   └── npm-publish.yml     # Publish @prorouter/cli to npm
 │   └── ISSUE_TEMPLATE/
 │       ├── bug_report.md
 │       └── feature_request.md
@@ -288,14 +287,6 @@ prorouter/
 │   ├── next.config.js
 │   ├── tailwind.config.ts
 │   └── tsconfig.json
-│
-├── cli-npm/
-│   ├── bin/
-│   │   └── prorouter            # NPM wrapper that downloads Go binary
-│   ├── src/
-│   │   └── install.ts
-│   ├── package.json
-│   └── README.md
 │
 ├── scripts/
 │   ├── install.sh               # Unix install script
