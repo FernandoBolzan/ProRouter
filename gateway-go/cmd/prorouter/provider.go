@@ -21,6 +21,7 @@ var providerListCmd = &cobra.Command{
 		fmt.Println("  Anthropic     - key: ${ANTHROPIC_API_KEY}")
 		fmt.Println("  Google Gemini - key: ${GEMINI_API_KEY}")
 		fmt.Println("  DeepSeek      - key: ${DEEPSEEK_API_KEY}")
+		fmt.Println("  Xiaomi MiMo   - key: ${XIAOMI_API_KEY}")
 		fmt.Println("  Ollama        - local: http://localhost:11434")
 		fmt.Println("  vLLM          - local: http://localhost:8000")
 		fmt.Println()
@@ -32,7 +33,7 @@ var providerAddCmd = &cobra.Command{
 	Use:   "add <provider>",
 	Short: "Add provider credentials",
 	Long: `Add or update provider API credentials.
-Supported providers: openai, anthropic, gemini, deepseek, ollama`,
+Supported providers: openai, anthropic, gemini, deepseek, xiaomi, ollama`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		provider := args[0]

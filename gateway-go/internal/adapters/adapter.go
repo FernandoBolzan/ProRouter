@@ -221,6 +221,14 @@ func NewReplicateAdapter(apiKey string) *ProviderAdapter {
 	}
 }
 
+func NewXiaomiAdapter(apiKey string) *ProviderAdapter {
+	return &ProviderAdapter{
+		Name:    "xiaomi",
+		BaseURL: "https://api.azure.cn/v1/openai",
+		APIKey:  apiKey,
+	}
+}
+
 type chatMsg struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`

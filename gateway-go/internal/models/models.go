@@ -9,6 +9,7 @@ const (
 	ProviderAnthropic ProviderType = "anthropic"
 	ProviderGemini    ProviderType = "gemini"
 	ProviderOllama    ProviderType = "ollama"
+	ProviderXiaomi    ProviderType = "xiaomi"
 )
 
 type APIKey struct {

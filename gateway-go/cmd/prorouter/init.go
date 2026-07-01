@@ -64,6 +64,8 @@ providers:
     api_key: "${GEMINI_API_KEY}"
   deepseek:
     api_key: "${DEEPSEEK_API_KEY}"
+  xiaomi:
+    api_key: "${XIAOMI_API_KEY}"
   local:
     scan_ports: true
     ports: [11434, 8000, 1234]

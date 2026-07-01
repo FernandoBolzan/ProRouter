@@ -266,6 +266,11 @@ func (p *Proxy) HandleListModels(w http.ResponseWriter, r *http.Request) {
 				modelEntry{ID: "deepinfra-llama", Object: "model", Created: time.Now().Unix(), OwnedBy: "deepinfra"},
 				modelEntry{ID: "deepinfra-mixtral", Object: "model", Created: time.Now().Unix(), OwnedBy: "deepinfra"},
 			)
+		case "xiaomi":
+			models = append(models,
+				modelEntry{ID: "xiaomi-mimo", Object: "model", Created: time.Now().Unix(), OwnedBy: "xiaomi"},
+				modelEntry{ID: "mimo-2.0", Object: "model", Created: time.Now().Unix(), OwnedBy: "xiaomi"},
+			)
 		}
 	}
 
@@ -323,6 +328,8 @@ func resolveProviderModel(model string) (provider, modelName string) {
 		return "fireworks", model
 	case "deepinfra-llama", "deepinfra-mixtral":
 		return "deepinfra", model
+	case "xiaomi-mimo", "mimo-2.0":
+		return "xiaomi", model
 	default:
 		return "openai", model
 	}

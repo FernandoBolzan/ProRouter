@@ -154,6 +154,12 @@ func setupAdapters(cfg *config.Config, p *proxy.Proxy) {
 	// Ollama (local)
 	p.RegisterAdapter("ollama", adapters.NewOpenAICompatible("ollama", "http://localhost:11434/v1", ""))
 	log.Println("  ✓ Provider: Ollama (local)")
+
+	// Xiaomi MiMo
+	if key := cfg.Providers.Xiaomi.APIKey; key != "" {
+		p.RegisterAdapter("xiaomi", adapters.NewXiaomiAdapter(key))
+		log.Printf("  ✓ Provider: Xiaomi MiMo (%s)", keyStatus(key))
+	}
 }
 
 func keyStatus(key string) string {
@@ -399,6 +405,15 @@ func handleProviderTest() http.HandlerFunc {
 				baseURL = "http://localhost:11434"
 			}
 			httpReq, err = http.NewRequest("GET", baseURL+"/api/tags", nil)
+		case "xiaomi":
+			baseURL := strings.TrimRight(req.BaseURL, "/")
+			if baseURL == "" {
+				baseURL = "https://api.azure.cn/v1/openai"
+			}
+			httpReq, err = http.NewRequest("GET", baseURL+"/models", nil)
+			if err == nil && req.APIKey != "" {
+				httpReq.Header.Set("Authorization", "Bearer "+req.APIKey)
+			}
 		default:
 			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "unsupported provider type"})
 			return
@@ -473,6 +488,9 @@ func loadDBProviders(db *database.DB, p *proxy.Proxy) {
 		case models.ProviderOllama:
 			p.RegisterAdapter(c.ID, adapters.NewOpenAICompatible(c.Label, c.BaseURL, ""))
 			log.Printf("  ✓ Provider (DB): %s (no key)", c.Label)
+		case models.ProviderXiaomi:
+			p.RegisterAdapter(c.ID, adapters.NewXiaomiAdapter(cred))
+			log.Printf("  ✓ Provider (DB): %s (%s, %s)", c.Label, keyStatus(cred), authType)
 		default:
 			log.Printf("  ? Provider (DB): %s (%s) - unknown type, registering as OpenAI-compatible", c.Label, c.Provider)
 			p.RegisterAdapter(c.ID, adapters.NewOpenAICompatible(c.Label, c.BaseURL, cred))

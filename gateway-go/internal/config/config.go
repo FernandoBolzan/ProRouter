@@ -36,6 +36,7 @@ type ProvidersConfig struct {
 	Anthropic ProviderAuth `yaml:"anthropic"`
 	Google    ProviderAuth `yaml:"google"`
 	DeepSeek  ProviderAuth `yaml:"deepseek"`
+	Xiaomi    ProviderAuth `yaml:"xiaomi"`
 	Local     LocalConfig  `yaml:"local"`
 }
 
@@ -93,6 +94,7 @@ func LoadConfig(path string) (*Config, error) {
 	resolveEnv(&cfg.Providers.Anthropic.APIKey)
 	resolveEnv(&cfg.Providers.Google.APIKey)
 	resolveEnv(&cfg.Providers.DeepSeek.APIKey)
+	resolveEnv(&cfg.Providers.Xiaomi.APIKey)
 
 	return cfg, nil
 }

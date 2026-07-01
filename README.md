@@ -314,7 +314,7 @@ update_channel: "stable"
 | `GEMINI_API_KEY` | Chave de API Google Gemini |
 | `DEEPSEEK_API_KEY` | Chave de API DeepSeek |
 | `ANTIGRAVITY_API_KEY` | Chave de API Antigravity |
-| `XIAOMI_MIMO_API_KEY` | Chave de API Xiaomi MiMo |
+| `XIAOMI_API_KEY` | Chave de API Xiaomi MiMo |
 | `GROQ_API_KEY` | Chave de API Groq |
 
 ---

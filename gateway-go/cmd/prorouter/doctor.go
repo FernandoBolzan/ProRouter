@@ -67,6 +67,7 @@ provider connectivity, and port availability.`,
 		}{
 			{"OpenAI", "OPENAI_API_KEY", "https://api.openai.com/v1/models"},
 			{"Anthropic", "ANTHROPIC_API_KEY", "https://api.anthropic.com/v1/messages"},
+			{"Xiaomi MiMo", "XIAOMI_API_KEY", "https://api.azure.cn/v1/openai/models"},
 			{"Ollama (local)", "", "http://localhost:11434/api/tags"},
 		}
 
