@@ -4,6 +4,9 @@ prorouter.exe
 *.exe
 *.test
 *.out
+*.dll
+*.so
+*.dylib
 
 # Go
 gateway-go/vendor/
@@ -14,26 +17,64 @@ gateway-go/prorouter.exe
 node_modules/
 dashboard-zen/.next/
 dashboard-zen/out/
+dashboard-zen/node_modules/
 cli-npm/node_modules/
 e2e/node_modules/
 
-# IDE
+# Playwright
+e2e/test-results/
+e2e/blob-report/
+e2e/playwright-report/
+
+# SQLite / Database
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Logs
+*.log
+logs/
+
+# Build / Dist
+dist/
+build/
+coverage/
+*.coverprofile
+
+# IDE / Editor
 .vscode/
 .idea/
 *.swp
 *.swo
+*.sublime-project
+*.sublime-workspace
+.cursor/
+.claude/
+.opencode/
 
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# Test results
-e2e/test-results/
-
-# Env
+# Env / Secrets
 .env
 .env.local
+.env.*.local
+*.pem
+*.key
 
-# Config
+# Config local
 .prorouter/
 !gateway-go/internal/dashboard/static/
+
+# Docker
+.docker/
+
+# Terraform / Infra
+*.tfstate
+*.tfstate.backup
+.terraform/
