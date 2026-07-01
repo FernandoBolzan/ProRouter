@@ -131,10 +131,10 @@ Compilado em Go como um único binário estático sem dependências externas. SQ
 │                                                                  │
 │  ┌────────────────────────────────────────────────────────────┐  │
 │  │                  Provider Adapters                         │  │
-│  │  ┌──────────┐ ┌──────────┐ ┌────────┐ ┌────────┐ ┌─────┐  │  │
-│  │  │ OpenAI   │ │ Anthropic│ │ Gemini │ │DeepSeek│ │Ollama│  │  │
-│  │  │ (nativo) │ │ (Claude) │ │ (Google)│ │        │ │      │  │  │
-│  │  └──────────┘ └──────────┘ └────────┘ └────────┘ └─────┘  │  │
+│  │  ┌──────────┐ ┌──────────┐ ┌────────┐ ┌────────┐ ┌──────┐ ┌─────┐  │  │
+│  │  │ OpenAI   │ │ Anthropic│ │ Gemini │ │DeepSeek│ │ MiMo │ │Ollama│  │  │
+│  │  │ (nativo) │ │ (Claude) │ │ (Google)│ │        │ │Xiaomi│ │      │  │  │
+│  │  └──────────┘ └──────────┘ └────────┘ └────────┘ └──────┘ └─────┘  │  │
 │  └────────────────────────────────────────────────────────────┘  │
 └──────────┬──────────────────────────────────────────┬───────────┘
            │                                          │
@@ -146,8 +146,9 @@ Compilado em Go como um único binário estático sem dependências externas. SQ
 │  │ Anthropic Claude│  │              │  │ vLLM               │ │
 │  │ Google Gemini   │  │              │  │ Llama.cpp          │ │
 │  │ DeepSeek V3/R1  │  │              │  │ LM Studio          │ │
-│  │ Antigravity     │  │              │  └─────────────────────┘ │
-│  │ Groq            │  │              └──────────────────────────┘
+│  │ Xiaomi MiMo     │  │              │  └─────────────────────┘ │
+│  │ Antigravity     │  │              └──────────────────────────┘
+│  │ Groq            │  │
 │  └────────────────┘  │
 └──────────────────────┘
 ```
@@ -313,6 +314,7 @@ update_channel: "stable"
 | `GEMINI_API_KEY` | Chave de API Google Gemini |
 | `DEEPSEEK_API_KEY` | Chave de API DeepSeek |
 | `ANTIGRAVITY_API_KEY` | Chave de API Antigravity |
+| `XIAOMI_MIMO_API_KEY` | Chave de API Xiaomi MiMo |
 | `GROQ_API_KEY` | Chave de API Groq |
 
 ---
@@ -360,6 +362,7 @@ prorouter update                # Auto-update para última versão
 | **Google** | Gemini 2.5 Pro, Gemini 2.0 Flash | Nativo | ✅ |
 | **DeepSeek** | DeepSeek V3, DeepSeek R1 | OpenAI-Compatible | ✅ |
 | **Antigravity** | Antigravity QwQ, Antigravity DeepSeek | OpenAI-Compatible | ✅ |
+| **Xiaomi MiMo** | MiMo, MiMo-2.0 | OpenAI-Compatible | ✅ |
 | **Groq** | Mixtral, Llama 3, Gemma | OpenAI-Compatible | ✅ |
 | **Qualquer OpenAI-Compatible** | Qualquer API compatível | Genérico | ✅ |
 
