@@ -1,0 +1,25 @@
+{
+  "name": "@prorouter/cli",
+  "version": "0.1.0",
+  "description": "ProRouter CLI - Universal LLM Gateway and Router",
+  "keywords": ["llm", "ai", "gateway", "router", "proxy", "openai", "anthropic", "ollama"],
+  "homepage": "https://github.com/prorouter/prorouter",
+  "license": "MIT",
+  "author": "ProRouter Team",
+  "bin": {
+    "prorouter": "./bin/run.js"
+  },
+  "scripts": {
+    "postinstall": "node ./scripts/download-binary.js",
+    "preuninstall": "node ./scripts/cleanup.js"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "files": [
+    "bin/",
+    "scripts/"
+  ],
+  "os": ["win32", "darwin", "linux"],
+  "cpu": ["x64", "arm64"]
+}

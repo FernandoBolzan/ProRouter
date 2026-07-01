@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProRouter Dashboard</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --border: #30363d;
+  --text: #c9d1d9;
+  --text-muted: #8b949e;
+  --primary: #58a6ff;
+  --success: #3fb950;
+  --warning: #d29922;
+  --danger: #f85149;
+  --radius: 8px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.5;
+}
+.header {
+  border-bottom: 1px solid var(--border);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+}
+.header h1 { font-size: 20px; color: var(--primary); }
+.header h1 span { color: var(--text-muted); font-weight: 400; }
+.header .version { color: var(--text-muted); font-size: 13px; }
+.container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+.nav {
+  display: flex; gap: 2px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+.nav button {
+  background: none; border: none; color: var(--text-muted);
+  padding: 10px 20px; cursor: pointer; font-size: 14px;
+  border-bottom: 2px solid transparent;
+  transition: all .2s;
+}
+.nav button:hover { color: var(--text); }
+.nav button.active { color: var(--primary); border-bottom-color: var(--primary); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* Stats grid */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px; margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+}
+.stat-card .label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; }
+.stat-card .value { font-size: 28px; font-weight: 600; margin-top: 4px; }
+.stat-card .value.green { color: var(--success); }
+.stat-card .value.blue { color: var(--primary); }
+
+/* Cards */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); margin-bottom: 16px;
+}
+.card-header {
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  font-weight: 600;
+}
+.card-body { padding: 20px; }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 14px; }
+th { color: var(--text-muted); font-weight: 500; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); cursor: pointer;
+  font-size: 14px; transition: all .2s;
+}
+.btn:hover { background: #21262d; }
+.btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+.btn-primary:hover { filter: brightness(1.1); }
+.btn-danger { color: var(--danger); border-color: var(--danger); }
+.btn-danger:hover { background: var(--danger); color: #fff; }
+
+/* Form */
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+.form-group input, .form-group select {
+  width: 100%; padding: 10px 12px; background: #0d1117;
+  border: 1px solid var(--border); border-radius: 6px;
+  color: var(--text); font-size: 14px;
+}
+.form-group input:focus { outline: none; border-color: var(--primary); }
+
+/* Modal */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.7); z-index: 100;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px;
+  width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto;
+}
+.modal h2 { margin-bottom: 16px; }
+
+/* Key display */
+.key-display {
+  background: #0d1117; border: 1px solid var(--border);
+  border-radius: 6px; padding: 12px 16px;
+  font-family: 'SF Mono', Monaco, monospace; font-size: 13px;
+  word-break: break-all; margin: 12px 0;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.key-display .copy-btn {
+  background: var(--primary); color: #fff; border: none;
+  padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;
+}
+
+/* Logs */
+.log-entry { font-size: 13px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.log-entry:last-child { border-bottom: none; }
+.log-entry .meta { color: var(--text-muted); font-size: 12px; }
+
+/* Status indicators */
+.status-dot {
+  display: inline-block; width: 8px; height: 8px;
+  border-radius: 50%; margin-right: 6px;
+}
+.status-dot.online { background: var(--success); }
+.status-dot.offline { background: var(--danger); }
+.status-dot.warning { background: var(--warning); }
+
+.empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
+.empty-state p { margin-bottom: 12px; }
+
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--success); color: #fff;
+  padding: 12px 20px; border-radius: var(--radius);
+  font-size: 14px; z-index: 999;
+  transform: translateY(100px); opacity: 0;
+  transition: all .3s;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>ProRouter <span>Dashboard</span></h1>
+  <div class="version">v0.1.0</div>
+</div>
+<div class="container">
+  <nav class="nav" id="nav">
+    <button class="active" data-tab="overview">Overview</button>
+    <button data-tab="keys">API Keys</button>
+    <button data-tab="providers">Providers</button>
+    <button data-tab="playground">Playground</button>
+    <button data-tab="logs">Logs</button>
+    <button data-tab="recipes">Recipes</button>
+  </nav>
+
+  <!-- Overview Tab -->
+  <div class="tab-content active" id="tab-overview">
+    <div class="stats-grid" id="stats-grid"></div>
+    <div class="card">
+      <div class="card-header">Quick Start</div>
+      <div class="card-body">
+        <p style="margin-bottom:12px;color:var(--text-muted)">Use this endpoint with any OpenAI-compatible SDK:</p>
+        <div class="key-display" style="margin:0">
+          <code id="endpoint-display">http://localhost:8080/v1</code>
+          <button class="copy-btn" onclick="copyEndpoint()">Copy</button>
+        </div>
+        <div style="margin-top:16px;color:var(--text-muted);font-size:13px">
+          <p style="margin-bottom:8px">cURL example:</p>
+          <code style="display:block;background:#0d1117;padding:12px;border-radius:6px;font-size:12px">
+# Replace YOUR_API_KEY with a key from the API Keys tab<br>
+curl http://localhost:8080/v1/chat/completions \<br>
+&nbsp;&nbsp;-H "Content-Type: application/json" \<br>
+&nbsp;&nbsp;-H "Authorization: Bearer YOUR_API_KEY" \<br>
+&nbsp;&nbsp;-d '{"model":"gpt-4o","messages":[{"role":"user","content":"Hello"}]}'
+          </code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Keys Tab -->
+  <div class="tab-content" id="tab-keys">
+    <div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+      <h2 style="font-size:18px">API Keys</h2>
+      <button class="btn btn-primary" onclick="showCreateKeyModal()">+ New Key</button>
+    </div>
+    <div class="card">
+      <div class="card-body" id="keys-list"><div class="empty-state"><p>No API keys yet. Create one to get started.</p></div></div>
+    </div>
+  </div>
+
+  <!-- Providers Tab -->
+  <div class="tab-content" id="tab-providers">
+    <h2 style="font-size:18px;margin-bottom:16px">Connected Providers</h2>
+    <div class="card">
+      <div class="card-body" id="providers-list"></div>
+    </div>
+  </div>
+
+  <!-- Playground Tab -->
+  <div class="tab-content" id="tab-playground">
+    <h2 style="font-size:18px;margin-bottom:16px">Model Arena</h2>
+    <div class="card">
+      <div class="card-body">
+        <div class="form-group">
+          <label>Prompt</label>
+          <textarea id="playground-prompt" rows="4" style="width:100%;padding:10px 12px;background:#0d1117;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;resize:vertical;font-family:inherit" placeholder="Enter your prompt here..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Model</label>
+          <select id="playground-model"><option value="">Select a model...</option></select>
+        </div>
+        <button class="btn btn-primary" onclick="runPlayground()">Send</button>
+        <div id="playground-result" style="margin-top:16px;display:none">
+          <div class="card"><div class="card-body" id="playground-output" style="white-space:pre-wrap;font-size:13px"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logs Tab -->
+  <div class="tab-content" id="tab-logs">
+    <h2 style="font-size:18px;margin-bottom:16px">Request Logs</h2>
+    <div class="card">
+      <div class="card-body" id="logs-list"><div class="empty-state"><p>No requests logged yet.</p></div></div>
+    </div>
+  </div>
+
+  <!-- Recipes Tab -->
+  <div class="tab-content" id="tab-recipes">
+    <h2 style="font-size:18px;margin-bottom:16px">Routing Recipes</h2>
+    <div class="card">
+      <div class="card-body" id="recipes-list"><div class="empty-state"><p>No recipes configured. Create a recipe file in ~/.prorouter/recipes/</p></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Key Modal -->
+<div class="modal-overlay" id="key-modal">
+  <div class="modal">
+    <h2>Create API Key</h2>
+    <div class="form-group">
+      <label>Key Name</label>
+      <input type="text" id="key-name" value="default" placeholder="e.g. dev, prod, ci">
+    </div>
+    <div class="form-group">
+      <label>Monthly Budget (USD, 0 = unlimited)</label>
+      <input type="number" id="key-budget" value="0" step="0.01" min="0">
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" onclick="closeModal('key-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="createKey()">Generate</button>
+    </div>
+    <div id="key-result" style="display:none;margin-top:16px">
+      <label style="font-size:13px;color:var(--text-muted);display:block;margin-bottom:6px">Your new API key (shown once):</label>
+      <div class="key-display"><code id="new-key-value"></code><button class="copy-btn" onclick="copyNewKey()">Copy</button></div>
+      <p style="color:var(--warning);font-size:12px;margin-top:8px">Store this securely — it will not be shown again!</p>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+const BASE = window.location.origin;
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = type === 'error' ? 'var(--danger)' : type === 'warn' ? 'var(--warning)' : 'var(--success)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Tab navigation
+document.querySelectorAll('#nav button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#nav button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    loadTabData(btn.dataset.tab);
+  });
+});
+
+function loadTabData(tab) {
+  if (tab === 'overview') loadStats();
+  else if (tab === 'keys') loadKeys();
+  else if (tab === 'providers') loadProviders();
+  else if (tab === 'logs') loadLogs();
+  else if (tab === 'playground') loadPlaygroundModels();
+  else if (tab === 'recipes') loadRecipes();
+}
+
+// Stats
+async function loadStats() {
+  try {
+    const r = await fetch(BASE + '/api/stats');
+    const data = await r.json();
+    const grid = document.getElementById('stats-grid');
+    grid.innerHTML = `
+      <div class="stat-card"><div class="label">Total Requests</div><div class="value blue">${data.total_requests}</div></div>
+      <div class="stat-card"><div class="label">Total Tokens</div><div class="value">${data.total_tokens.toLocaleString()}</div></div>
+      <div class="stat-card"><div class="label">Total Cost</div><div class="value green">$${data.total_cost_usd.toFixed(4)}</div></div>
+      <div class="stat-card"><div class="label">Active Keys</div><div class="value blue">${data.active_keys}</div></div>
+      <div class="stat-card"><div class="label">Avg Latency</div><div class="value">${data.avg_latency_ms.toFixed(0)}ms</div></div>
+    `;
+  } catch(e) { console.error('stats error:', e); }
+}
+
+// API Keys
+async function loadKeys() {
+  try {
+    const r = await fetch(BASE + '/api/keys');
+    const keys = await r.json();
+    const container = document.getElementById('keys-list');
+    if (!keys.length) {
+      container.innerHTML = '<div class="empty-state"><p>No API keys yet. Create one to get started.</p></div>';
+      return;
+    }
+    container.innerHTML = `<table>
+      <thead><tr><th>Name</th><th>Key Prefix</th><th>Monthly Spent</th><th>Budget</th><th>Status</th><th>Last Used</th><th>Actions</th></tr></thead>
+      <tbody>${keys.map(k => `
+        <tr>
+          <td>${k.name}</td>
+          <td><code style="font-size:12px;background:var(--bg);padding:2px 6px;border-radius:4px">${k.key_prefix}...${k.key_hash.slice(-6)}</code></td>
+          <td>$${k.monthly_spent.toFixed(4)}</td>
+          <td>${k.monthly_budget > 0 ? '$' + k.monthly_budget.toFixed(2) : 'Unlimited'}</td>
+          <td>${k.is_revoked ? '<span style="color:var(--danger)">Revoked</span>' : '<span style="color:var(--success)">Active</span>'}</td>
+          <td style="color:var(--text-muted);font-size:12px">${k.last_used_at ? new Date(k.last_used_at).toLocaleString() : 'Never'}</td>
+          <td>${!k.is_revoked ? `<button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="revokeKey('${k.id}')">Revoke</button>` : ''}</td>
+        </tr>
+      `).join('')}</tbody>
+    </table>`;
+  } catch(e) { console.error('keys error:', e); }
+}
+
+async function createKey() {
+  const name = document.getElementById('key-name').value || 'default';
+  const budget = parseFloat(document.getElementById('key-budget').value) || 0;
+  try {
+    const r = await fetch(BASE + '/api/keys', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({name, monthly_budget: budget}),
+    });
+    const data = await r.json();
+    if (data.key) {
+      document.getElementById('new-key-value').textContent = data.key;
+      document.getElementById('key-result').style.display = 'block';
+      document.querySelector('#key-modal .btn-primary').style.display = 'none';
+      showToast('Key created successfully!');
+      loadKeys();
+    } else {
+      showToast('Error: ' + (data.error || 'unknown'), 'error');
+    }
+  } catch(e) {
+    showToast('Error creating key: ' + e, 'error');
+  }
+}
+
+function showCreateKeyModal() {
+  document.getElementById('key-name').value = 'default';
+  document.getElementById('key-budget').value = '0';
+  document.getElementById('key-result').style.display = 'none';
+  document.querySelector('#key-modal .btn-primary').style.display = '';
+  document.getElementById('key-modal').classList.add('show');
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+async function revokeKey(id) {
+  if (!confirm('Revoke this API key? This cannot be undone.')) return;
+  try {
+    const r = await fetch(BASE + '/api/keys/' + id, {method: 'DELETE'});
+    if (r.ok) { showToast('Key revoked'); loadKeys(); }
+    else showToast('Error revoking key', 'error');
+  } catch(e) { showToast('Error: ' + e, 'error'); }
+}
+
+function copyEndpoint() {
+  navigator.clipboard.writeText(document.getElementById('endpoint-display').textContent);
+  showToast('Endpoint copied!');
+}
+
+function copyNewKey() {
+  navigator.clipboard.writeText(document.getElementById('new-key-value').textContent);
+  showToast('Key copied!');
+  document.getElementById('key-result').style.display = 'none';
+  closeModal('key-modal');
+}
+
+// Providers
+async function loadProviders() {
+  try {
+    const r = await fetch(BASE + '/api/providers');
+    const providers = await r.json();
+    const container = document.getElementById('providers-list');
+    container.innerHTML = `<table>
+      <thead><tr><th>Provider</th><th>Status</th><th>Base URL</th><th>Models</th></tr></thead>
+      <tbody>${providers.map(p => `
+        <tr>
+          <td>${p.label || p.provider}</td>
+          <td><span class="status-dot ${p.is_active ? 'online' : 'offline'}"></span>${p.is_active ? 'Active' : 'Inactive'}</td>
+          <td style="font-size:12px;color:var(--text-muted)">${p.base_url || '-'}</td>
+          <td style="font-size:12px">${p.models ? JSON.parse(p.models).join(', ') : '-'}</td>
+        </tr>
+      `).join('')}</tbody>
+    </table>`;
+  } catch(e) { console.error('providers error:', e); }
+}
+
+// Playground
+async function loadPlaygroundModels() {
+  try {
+    const r = await fetch(BASE + '/v1/models');
+    const data = await r.json();
+    const sel = document.getElementById('playground-model');
+    sel.innerHTML = '<option value="">Select a model...</option>' +
+      data.data.map(m => `<option value="${m.id}">${m.id}</option>`).join('');
+  } catch(e) { console.error('models error:', e); }
+}
+
+async function runPlayground() {
+  const prompt = document.getElementById('playground-prompt').value;
+  const model = document.getElementById('playground-model').value;
+  if (!prompt || !model) { showToast('Enter a prompt and select a model', 'warn'); return; }
+
+  const output = document.getElementById('playground-output');
+  const result = document.getElementById('playground-result');
+  result.style.display = 'block';
+  output.textContent = 'Waiting for response...';
+
+  try {
+    const r = await fetch(BASE + '/api/playground', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({model, messages: [{role: 'user', content: prompt}]}),
+    });
+    const data = await r.json();
+    if (data.choices && data.choices[0]) {
+      output.textContent = data.choices[0].message.content;
+    } else {
+      output.textContent = 'Error: ' + JSON.stringify(data);
+    }
+  } catch(e) {
+    output.textContent = 'Error: ' + e;
+  }
+}
+
+// Logs
+async function loadLogs() {
+  try {
+    const r = await fetch(BASE + '/api/logs');
+    const logs = await r.json();
+    const container = document.getElementById('logs-list');
+    if (!logs.length) {
+      container.innerHTML = '<div class="empty-state"><p>No requests logged yet.</p></div>';
+      return;
+    }
+    container.innerHTML = logs.slice(0, 50).map(l => `
+      <div class="log-entry">
+        <strong>${l.model}</strong> via ${l.provider}
+        <span class="meta">| ${l.duration_ms}ms | $${l.cost_usd.toFixed(6)} | ${l.prompt_tokens + l.completion_tokens} tokens | ${l.streamed ? 'stream' : 'sync'} | ${new Date(l.created_at).toLocaleString()}</span>
+      </div>
+    `).join('');
+  } catch(e) { console.error('logs error:', e); }
+}
+
+// Recipes
+async function loadRecipes() {
+  try {
+    const r = await fetch(BASE + '/api/recipes');
+    const recipes = await r.json();
+    const container = document.getElementById('recipes-list');
+    if (!recipes.length) {
+      container.innerHTML = '<div class="empty-state"><p>No recipes configured. Create a recipe file in ~/.prorouter/recipes/</p></div>';
+      return;
+    }
+    container.innerHTML = `<table>
+      <thead><tr><th>Name</th><th>Status</th><th>Pipeline</th></tr></thead>
+      <tbody>${recipes.map(r => `
+        <tr>
+          <td>${r.name}</td>
+          <td>${r.is_default ? '<span style="color:var(--primary)">Default</span>' : r.is_active ? '<span style="color:var(--success)">Active</span>' : '<span style="color:var(--text-muted)">Inactive</span>'}</td>
+          <td style="font-size:11px;font-family:monospace;max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.pipeline_json}</td>
+        </tr>
+      `).join('')}</tbody>
+    </table>`;
+  } catch(e) { console.error('recipes error:', e); }
+}
+
+// Auto-refresh stats on overview
+setInterval(() => {
+  if (document.getElementById('tab-overview').classList.contains('active')) loadStats();
+}, 10000);
+
+// Load initial data
+loadStats();
+</script>
+</body>
+</html>

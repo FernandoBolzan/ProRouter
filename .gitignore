@@ -1,0 +1,39 @@
+# Binaries
+prorouter
+prorouter.exe
+*.exe
+*.test
+*.out
+
+# Go
+gateway-go/vendor/
+gateway-go/prorouter
+gateway-go/prorouter.exe
+
+# Node
+node_modules/
+dashboard-zen/.next/
+dashboard-zen/out/
+cli-npm/node_modules/
+e2e/node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test results
+e2e/test-results/
+
+# Env
+.env
+.env.local
+
+# Config
+.prorouter/
+!gateway-go/internal/dashboard/static/
