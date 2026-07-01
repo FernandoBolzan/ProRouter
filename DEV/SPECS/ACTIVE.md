@@ -106,10 +106,10 @@ A **Recipe** defines how a request is processed before execution and how fallbac
 |---|---|---|
 | **Homebrew (macOS/Linux)** | `brew install prorouter/tap/prorouter` | Dev machines |
 | **Scoop (Windows)** | `scoop install prorouter` | Dev machines (Win) |
-| **Go Install** | `go install github.com/prorouter/gateway-go/cmd/prorouter@latest` | Go developers |
+| **Go Install** | `go install github.com/FernandoBolzan/ProRouter/gateway-go/cmd/prorouter@latest` | Go developers |
 | **NPM / npx** | `npx prorouter serve` or `npm i -g @prorouter/cli` | JS-centric users |
 | **Docker** | `docker run -p 8080:8080 prorouter/gateway` | Production / Cloud |
-| **Binary Download** | `curl -fsSL https://get.prorouter.dev | sh` | Quick start |
+| **Binary Download** | GitHub [Releases](https://github.com/FernandoBolzan/ProRouter/releases) | Quick start |
 | **Source Build** | `git clone && make build` | Contributors |
 
 ### 3.2 CLI Tool (`prorouter`) Unified Command Structure

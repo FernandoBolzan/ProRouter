@@ -8,7 +8,7 @@ import (
 	"time"
 
 	_ "modernc.org/sqlite"
-	"github.com/prorouter/prorouter/internal/models"
+	"github.com/FernandoBolzan/ProRouter/internal/models"
 )
 
 type DB struct {
@@ -95,6 +95,34 @@ func (db *DB) migrate() error {
 			);
 			CREATE INDEX IF NOT EXISTS idx_audit_logs_created ON audit_logs(created_at);
 			CREATE INDEX IF NOT EXISTS idx_audit_logs_api_key ON audit_logs(api_key_id);`,
+		},
+		{
+			"002_add_api_key_encrypted",
+			`ALTER TABLE provider_configs ADD COLUMN api_key_encrypted TEXT NOT NULL DEFAULT '';`,
+		},
+		{
+			"003_add_auth_type",
+			`ALTER TABLE provider_configs ADD COLUMN auth_type TEXT NOT NULL DEFAULT 'api_key';`,
+		},
+		{
+			"004_add_access_token",
+			`ALTER TABLE provider_configs ADD COLUMN access_token TEXT NOT NULL DEFAULT '';`,
+		},
+		{
+			"005_add_refresh_token",
+			`ALTER TABLE provider_configs ADD COLUMN refresh_token TEXT NOT NULL DEFAULT '';`,
+		},
+		{
+			"006_add_id_token",
+			`ALTER TABLE provider_configs ADD COLUMN id_token TEXT NOT NULL DEFAULT '';`,
+		},
+		{
+			"007_add_token_expires_at",
+			`ALTER TABLE provider_configs ADD COLUMN token_expires_at DATETIME;`,
+		},
+		{
+			"008_add_provider_meta",
+			`ALTER TABLE provider_configs ADD COLUMN provider_meta TEXT NOT NULL DEFAULT '{}';`,
 		},
 	}
 
@@ -213,7 +241,6 @@ func (db *DB) GetAuditLogs(limit int) ([]models.AuditLog, error) {
 	}
 	defer rows.Close()
 
-	var logs []models.AuditLog
 	for rows.Next() {
 		var l models.AuditLog
 		var streamed int
@@ -228,39 +255,130 @@ func (db *DB) GetAuditLogs(limit int) ([]models.AuditLog, error) {
 	return logs, nil
 }
 
-// Provider config operations
+func scanProviderConfig(scanner interface {
+	Scan(dest ...interface{}) error
+}) (models.ProviderConfig, error) {
+	var c models.ProviderConfig
+	var isActive int
+	var tokenExpiresAt sql.NullTime
+	err := scanner.Scan(
+		&c.ID, &c.Provider, &c.Label, &c.BaseURL, &c.APIKeyEncrypted,
+		&c.Models, &isActive, &c.Priority,
+		&c.AuthType, &c.AccessToken, &c.RefreshToken, &c.IDToken,
+		&tokenExpiresAt, &c.ProviderMeta,
+	)
+	if err != nil {
+		return c, err
+	}
+	c.IsActive = isActive == 1
+	if tokenExpiresAt.Valid {
+		c.TokenExpiresAt = &tokenExpiresAt.Time
+	}
+	return c, nil
+}
+
+const providerColumns = `id, provider, label, base_url, api_key_encrypted, models, is_active, priority,
+auth_type, access_token, refresh_token, id_token, token_expires_at, provider_meta`
+
 func (db *DB) ListProviderConfigs() ([]models.ProviderConfig, error) {
 	configs := make([]models.ProviderConfig, 0)
 	rows, err := db.Query(
-		`SELECT id, provider, label, base_url, models, is_active, priority
-		FROM provider_configs ORDER BY priority ASC`)
+		`SELECT ` + providerColumns + ` FROM provider_configs ORDER BY priority ASC`)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		var c models.ProviderConfig
-		var isActive int
-		if err := rows.Scan(&c.ID, &c.Provider, &c.Label, &c.BaseURL, &c.Models, &isActive, &c.Priority); err != nil {
+		c, err := scanProviderConfig(rows)
+		if err != nil {
 			return nil, err
 		}
-		c.IsActive = isActive == 1
 		configs = append(configs, c)
 	}
 	return configs, nil
 }
 
 func (db *DB) UpsertProviderConfig(c models.ProviderConfig) error {
+	var expiresAt interface{}
+	if c.TokenExpiresAt != nil {
+		expiresAt = c.TokenExpiresAt.Format(time.RFC3339)
+	}
 	_, err := db.Exec(
-		`INSERT INTO provider_configs (id, provider, label, base_url, models, is_active, priority)
-		VALUES (?, ?, ?, ?, ?, ?, ?)
+		`INSERT INTO provider_configs (`+providerColumns+`)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(id) DO UPDATE SET
 			provider=excluded.provider, label=excluded.label, base_url=excluded.base_url,
-			models=excluded.models, is_active=excluded.is_active, priority=excluded.priority`,
-		c.ID, c.Provider, c.Label, c.BaseURL, c.Models, boolToInt(c.IsActive), c.Priority,
+			api_key_encrypted=excluded.api_key_encrypted, models=excluded.models,
+			is_active=excluded.is_active, priority=excluded.priority,
+			auth_type=excluded.auth_type, access_token=excluded.access_token,
+			refresh_token=excluded.refresh_token, id_token=excluded.id_token,
+			token_expires_at=excluded.token_expires_at, provider_meta=excluded.provider_meta`,
+		c.ID, c.Provider, c.Label, c.BaseURL, c.APIKeyEncrypted, c.Models,
+		boolToInt(c.IsActive), c.Priority,
+		c.AuthType, c.AccessToken, c.RefreshToken, c.IDToken,
+		expiresAt, c.ProviderMeta,
 	)
 	return err
+}
+
+func (db *DB) GetProviderConfig(id string) (*models.ProviderConfig, error) {
+	c, err := scanProviderConfig(db.QueryRow(
+		`SELECT `+providerColumns+` FROM provider_configs WHERE id = ?`, id,
+	))
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &c, nil
+}
+
+func (db *DB) DeleteProviderConfig(id string) error {
+	_, err := db.Exec("DELETE FROM provider_configs WHERE id = ?", id)
+	return err
+}
+
+func (db *DB) ListOAuthProviders() ([]models.ProviderConfig, error) {
+	configs := make([]models.ProviderConfig, 0)
+	rows, err := db.Query(
+		`SELECT `+providerColumns+` FROM provider_configs WHERE auth_type = 'oauth' AND is_active = 1`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		c, err := scanProviderConfig(rows)
+		if err != nil {
+			return nil, err
+		}
+		configs = append(configs, c)
+	}
+	return configs, nil
+}
+
+func (db *DB) UpdateOAuthTokens(id, accessToken, refreshToken, idToken string, expiresAt *time.Time) error {
+	var expiresAtArg interface{}
+	if expiresAt != nil {
+		expiresAtArg = expiresAt.Format(time.RFC3339)
+	}
+	_, err := db.Exec(
+		`UPDATE provider_configs SET access_token=?, refresh_token=?, id_token=?, token_expires_at=? WHERE id=?`,
+		accessToken, refreshToken, idToken, expiresAtArg, id,
+	)
+	return err
+}
+
+func (db *DB) GetProviderStats() (map[string]interface{}, error) {
+	var total, active int
+	db.QueryRow("SELECT COUNT(*) FROM provider_configs").Scan(&total)
+	db.QueryRow("SELECT COUNT(*) FROM provider_configs WHERE is_active = 1").Scan(&active)
+	return map[string]interface{}{
+		"total_providers":  total,
+		"active_providers": active,
+	}, nil
 }
 
 // Stats

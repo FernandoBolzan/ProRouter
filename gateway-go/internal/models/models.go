@@ -38,14 +38,28 @@ type AuditLog struct {
 	CreatedAt       time.Time `json:"created_at" db:"created_at"`
 }
 
+type AuthType string
+
+const (
+	AuthTypeAPIKey AuthType = "api_key"
+	AuthTypeOAuth  AuthType = "oauth"
+)
+
 type ProviderConfig struct {
-	ID        string       `json:"id" db:"id"`
-	Provider  ProviderType `json:"provider" db:"provider"`
-	Label     string       `json:"label" db:"label"`
-	BaseURL   string       `json:"base_url" db:"base_url"`
-	Models    string       `json:"models" db:"models"` // JSON array
-	IsActive  bool         `json:"is_active" db:"is_active"`
-	Priority  int          `json:"priority" db:"priority"`
+	ID                string       `json:"id" db:"id"`
+	Provider          ProviderType `json:"provider" db:"provider"`
+	Label             string       `json:"label" db:"label"`
+	BaseURL           string       `json:"base_url" db:"base_url"`
+	APIKeyEncrypted   string       `json:"-" db:"api_key_encrypted"`
+	Models            string       `json:"models" db:"models"`
+	IsActive          bool         `json:"is_active" db:"is_active"`
+	Priority          int          `json:"priority" db:"priority"`
+	AuthType          AuthType     `json:"auth_type" db:"auth_type"`
+	AccessToken       string       `json:"-" db:"access_token"`
+	RefreshToken      string       `json:"-" db:"refresh_token"`
+	IDToken           string       `json:"-" db:"id_token"`
+	TokenExpiresAt    *time.Time   `json:"token_expires_at,omitempty" db:"token_expires_at"`
+	ProviderMeta      string       `json:"provider_meta,omitempty" db:"provider_meta"`
 }
 
 type Recipe struct {

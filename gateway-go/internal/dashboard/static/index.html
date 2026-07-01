@@ -38,12 +38,13 @@ body {
   display: flex; gap: 2px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 24px;
+  overflow-x: auto;
 }
 .nav button {
   background: none; border: none; color: var(--text-muted);
   padding: 10px 20px; cursor: pointer; font-size: 14px;
   border-bottom: 2px solid transparent;
-  transition: all .2s;
+  transition: all .2s; white-space: nowrap;
 }
 .nav button:hover { color: var(--text); }
 .nav button.active { color: var(--primary); border-bottom-color: var(--primary); }
@@ -64,6 +65,14 @@ body {
 .stat-card .value.green { color: var(--success); }
 .stat-card .value.blue { color: var(--primary); }
 
+/* Health badge */
+.health-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500;
+}
+.health-badge.good { background: rgba(63,185,80,.15); color: var(--success); border: 1px solid rgba(63,185,80,.3); }
+.health-badge.bad { background: rgba(248,81,73,.15); color: var(--danger); border: 1px solid rgba(248,81,73,.3); }
+
 /* Cards */
 .card {
   background: var(--surface); border: 1px solid var(--border);
@@ -74,11 +83,13 @@ body {
   font-weight: 600;
 }
 .card-body { padding: 20px; }
+.card-body.no-padding { padding: 0; }
 
 /* Tables */
 table { width: 100%; border-collapse: collapse; }
 th, td { text-align: left; padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 14px; }
 th { color: var(--text-muted); font-weight: 500; }
+.table-wrap { overflow-x: auto; }
 
 /* Buttons */
 .btn {
@@ -92,16 +103,27 @@ th { color: var(--text-muted); font-weight: 500; }
 .btn-primary:hover { filter: brightness(1.1); }
 .btn-danger { color: var(--danger); border-color: var(--danger); }
 .btn-danger:hover { background: var(--danger); color: #fff; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+.btn-icon { padding: 4px 8px; font-size: 12px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; }
+.btn-icon:hover { color: var(--text); }
+.btn-success { background: var(--success); color: #fff; border-color: var(--success); }
+.btn-success:hover { filter: brightness(1.1); }
 
 /* Form */
 .form-group { margin-bottom: 16px; }
 .form-group label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
-.form-group input, .form-group select {
+.form-group input, .form-group select, .form-group textarea {
   width: 100%; padding: 10px 12px; background: #0d1117;
   border: 1px solid var(--border); border-radius: 6px;
-  color: var(--text); font-size: 14px;
+  color: var(--text); font-size: 14px; font-family: inherit;
 }
-.form-group input:focus { outline: none; border-color: var(--primary); }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--primary); }
+.form-group textarea { resize: vertical; }
+.form-row { display: flex; gap: 12px; }
+.form-row .form-group { flex: 1; }
+.form-check { display: flex; align-items: center; gap: 8px; }
+.form-check input[type="checkbox"] { width: auto; }
+.form-check label { margin-bottom: 0; cursor: pointer; }
 
 /* Modal */
 .modal-overlay {
@@ -113,9 +135,11 @@ th { color: var(--text-muted); font-weight: 500; }
 .modal {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 24px;
-  width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto;
+  width: 90%; max-width: 560px; max-height: 90vh; overflow-y: auto;
 }
-.modal h2 { margin-bottom: 16px; }
+.modal h2 { margin-bottom: 16px; font-size: 18px; }
+.modal h3 { font-size: 15px; margin-bottom: 12px; color: var(--text-muted); }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
 
 /* Key display */
 .key-display {
@@ -139,14 +163,96 @@ th { color: var(--text-muted); font-weight: 500; }
 .status-dot {
   display: inline-block; width: 8px; height: 8px;
   border-radius: 50%; margin-right: 6px;
+  vertical-align: middle;
 }
 .status-dot.online { background: var(--success); }
 .status-dot.offline { background: var(--danger); }
 .status-dot.warning { background: var(--warning); }
 
+/* Test result */
+.test-result { margin-top: 12px; padding: 10px 14px; border-radius: 6px; font-size: 13px; display: none; }
+.test-result.success { display: block; background: rgba(63,185,80,.1); border: 1px solid rgba(63,185,80,.3); color: var(--success); }
+.test-result.fail { display: block; background: rgba(248,81,73,.1); border: 1px solid rgba(248,81,73,.3); color: var(--danger); }
+.test-result .latency { color: var(--text-muted); font-size: 12px; }
+
+/* Collapsible */
+.collapsible { border: 1px solid var(--border); border-radius: var(--radius); margin-top: 16px; }
+.collapsible-header {
+  padding: 12px 16px; cursor: pointer; display: flex;
+  align-items: center; justify-content: space-between;
+  font-size: 13px; font-weight: 500;
+  user-select: none;
+}
+.collapsible-header:hover { background: rgba(255,255,255,.03); }
+.collapsible-header .arrow { transition: transform .2s; font-size: 10px; }
+.collapsible-header.open .arrow { transform: rotate(90deg); }
+.collapsible-body { display: none; padding: 0 16px 16px; font-size: 13px; color: var(--text-muted); line-height: 1.7; }
+.collapsible-body.open { display: block; }
+.collapsible-body code { background: var(--bg); padding: 1px 4px; border-radius: 3px; font-size: 12px; }
+
+/* Provider brand colors + gallery */
+.prov-gallery {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px; margin-bottom: 24px;
+}
+.prov-gallery-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px 16px;
+  text-align: center; cursor: pointer;
+  transition: border-color .2s, transform .15s;
+}
+.prov-gallery-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+.prov-gallery-card .g-logo {
+  width: 48px; height: 48px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 20px; color: #fff;
+  margin: 0 auto 10px;
+}
+.prov-gallery-card .g-name { font-size: 13px; font-weight: 500; }
+.prov-gallery-card .g-auth { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.prov-gallery-card .g-badge {
+  display: inline-block; font-size: 10px; padding: 2px 8px;
+  border-radius: 8px; margin-top: 8px;
+}
+.prov-gallery-card .g-badge.connected { background: rgba(63,185,80,.15); color: var(--success); }
+.prov-gallery-card .g-badge.oauth { background: rgba(88,166,255,.15); color: var(--primary); }
+
+/* Connect modal instructions */
+.instructions { font-size: 13px; line-height: 1.7; color: var(--text-muted); }
+.instructions ol { margin: 8px 0 8px 20px; }
+.instructions li { margin-bottom: 4px; }
+.instructions a { color: var(--primary); text-decoration: none; }
+.instructions a:hover { text-decoration: underline; }
+
+/* OAuth section */
+.oauth-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px; margin-top: 24px;
+}
+.oauth-card h3 { font-size: 15px; margin-bottom: 8px; }
+.oauth-card p { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.6; }
+
+/* Loading */
+.loading { text-align: center; padding: 40px; color: var(--text-muted); }
+.spinner {
+  display: inline-block; width: 20px; height: 20px;
+  border: 2px solid var(--border); border-top-color: var(--primary);
+  border-radius: 50%; animation: spin .6s linear infinite;
+  vertical-align: middle; margin-right: 8px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Empty state */
 .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
 .empty-state p { margin-bottom: 12px; }
+.empty-state .btn { margin-top: 8px; }
 
+/* Error state */
+.error-state { text-align: center; padding: 40px; color: var(--danger); }
+.error-state p { margin-bottom: 12px; }
+.error-state .btn { margin-top: 8px; }
+
+/* Toast */
 .toast {
   position: fixed; bottom: 24px; right: 24px;
   background: var(--success); color: #fff;
@@ -156,6 +262,37 @@ th { color: var(--text-muted); font-weight: 500; }
   transition: all .3s;
 }
 .toast.show { transform: translateY(0); opacity: 1; }
+
+/* Provider brand colors */
+.prov-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+.prov-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+  transition: border-color .2s, box-shadow .2s;
+}
+.prov-card:hover { border-color: var(--primary); box-shadow: 0 0 0 1px rgba(88,166,255,.15); }
+.prov-card-head {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+}
+.prov-logo {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 18px; color: #fff; flex-shrink: 0;
+}
+.prov-card-head .info { flex: 1; min-width: 0; }
+.prov-card-head .info .name { font-weight: 600; font-size: 15px; }
+.prov-card-head .info .type { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+.prov-card-body { padding: 12px 20px; }
+.prov-card-body .row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
+.prov-card-body .row .lbl { color: var(--text-muted); }
+.prov-card-body .row .val { text-align: right; max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.prov-card-body .row .val code { font-size: 11px; background: var(--bg); padding: 1px 5px; border-radius: 3px; }
+.prov-card-actions {
+  display: flex; gap: 6px; padding: 10px 20px;
+  border-top: 1px solid var(--border); background: rgba(255,255,255,.02);
+}
+
 </style>
 </head>
 <body>
@@ -211,10 +348,24 @@ curl http://localhost:8080/v1/chat/completions \<br>
 
   <!-- Providers Tab -->
   <div class="tab-content" id="tab-providers">
-    <h2 style="font-size:18px;margin-bottom:16px">Connected Providers</h2>
-    <div class="card">
-      <div class="card-body" id="providers-list"></div>
+    <div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+      <h2 style="font-size:18px">Connected Providers</h2>
+      <button class="btn btn-primary" onclick="showProviderGallery()">+ Connect New</button>
     </div>
+    <div class="card">
+      <div class="card-body no-padding" id="providers-list">
+        <div class="loading"><span class="spinner"></span>Loading providers...</div>
+      </div>
+    </div>
+
+    <!-- Available Provider Gallery -->
+    <div class="card" style="margin-top:24px">
+      <div class="card-header">Available Providers</div>
+      <div class="card-body">
+        <div class="prov-gallery" id="provider-gallery"></div>
+      </div>
+    </div>
+  </div>
   </div>
 
   <!-- Playground Tab -->
@@ -224,7 +375,7 @@ curl http://localhost:8080/v1/chat/completions \<br>
       <div class="card-body">
         <div class="form-group">
           <label>Prompt</label>
-          <textarea id="playground-prompt" rows="4" style="width:100%;padding:10px 12px;background:#0d1117;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;resize:vertical;font-family:inherit" placeholder="Enter your prompt here..."></textarea>
+          <textarea id="playground-prompt" rows="4" placeholder="Enter your prompt here..."></textarea>
         </div>
         <div class="form-group">
           <label>Model</label>
@@ -279,6 +430,76 @@ curl http://localhost:8080/v1/chat/completions \<br>
   </div>
 </div>
 
+<!-- Provider Modal -->
+<div class="modal-overlay" id="provider-modal">
+  <div class="modal">
+    <h2 id="provider-modal-title">Connect Provider</h2>
+    <div class="instructions" id="provider-instructions" style="display:none;margin-bottom:16px;padding:12px;background:var(--bg);border-radius:6px">
+      <strong>How to get your API key:</strong>
+      <ol id="provider-instructions-list"></ol>
+    </div>
+    <div id="oauth-section" style="display:none;margin-bottom:16px;padding:12px;background:var(--bg);border-radius:6px;text-align:center">
+      <p style="margin-bottom:8px;font-size:14px">Also available via OAuth login</p>
+      <button class="btn btn-primary" onclick="startOAuthFlow()" id="btn-oauth" style="width:100%">Connect with OAuth</button>
+    </div>
+    <div class="form-group">
+      <label>Label <span style="color:var(--danger)">*</span></label>
+      <input type="text" id="provider-label" placeholder="e.g. My OpenAI">
+    </div>
+    <div class="form-group">
+      <label>Provider Type <span style="color:var(--danger)">*</span></label>
+      <select id="provider-type" onchange="updateBaseUrl(); showInstructions()">
+        <option value="">Select type...</option>
+        <option value="openai-compatible">OpenAI Compatible</option>
+        <option value="anthropic">Anthropic</option>
+        <option value="gemini">Gemini</option>
+        <option value="ollama">Ollama</option>
+        <option value="mistral">Mistral</option>
+        <option value="cohere">Cohere</option>
+        <option value="together">Together</option>
+        <option value="groq">Groq</option>
+        <option value="perplexity">Perplexity</option>
+        <option value="fireworks">Fireworks</option>
+        <option value="deepinfra">DeepInfra</option>
+        <option value="replicate">Replicate</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Base URL <span style="color:var(--danger)">*</span></label>
+      <input type="url" id="provider-base-url" placeholder="https://api.openai.com/v1">
+    </div>
+    <div class="form-group">
+      <label>API Key</label>
+      <input type="password" id="provider-api-key" placeholder="sk-... (not required for Ollama)">
+    </div>
+    <div class="form-group">
+      <label>Models (comma-separated)</label>
+      <input type="text" id="provider-models" placeholder="e.g. gpt-4o,gpt-4o-mini">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Priority</label>
+        <input type="number" id="provider-priority" value="0" min="0">
+      </div>
+      <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:4px">
+        <div class="form-check">
+          <input type="checkbox" id="provider-active" checked>
+          <label for="provider-active">Active</label>
+        </div>
+      </div>
+    </div>
+
+    <div id="test-result" class="test-result"></div>
+
+    <div class="modal-actions">
+      <button class="btn" onclick="testProviderConnection()" id="btn-test">Test Connection</button>
+      <div style="flex:1"></div>
+      <button class="btn" onclick="closeProviderModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProvider()" id="btn-save">Save Provider</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -313,11 +534,24 @@ function loadTabData(tab) {
   else if (tab === 'recipes') loadRecipes();
 }
 
+// Collapsible
+function toggleCollapsible(header) {
+  header.classList.toggle('open');
+  header.nextElementSibling.classList.toggle('open');
+}
+
 // Stats
 async function loadStats() {
   try {
-    const r = await fetch(BASE + '/api/stats');
-    const data = await r.json();
+    const [statsR, providersR] = await Promise.all([
+      fetch(BASE + '/api/stats'),
+      fetch(BASE + '/api/providers')
+    ]);
+    const data = await statsR.json();
+    const providers = await providersR.json();
+    const activeProviders = providers.filter(p => p.is_active).length;
+    const hasHealthy = activeProviders > 0;
+
     const grid = document.getElementById('stats-grid');
     grid.innerHTML = `
       <div class="stat-card"><div class="label">Total Requests</div><div class="value blue">${data.total_requests}</div></div>
@@ -325,8 +559,19 @@ async function loadStats() {
       <div class="stat-card"><div class="label">Total Cost</div><div class="value green">$${data.total_cost_usd.toFixed(4)}</div></div>
       <div class="stat-card"><div class="label">Active Keys</div><div class="value blue">${data.active_keys}</div></div>
       <div class="stat-card"><div class="label">Avg Latency</div><div class="value">${data.avg_latency_ms.toFixed(0)}ms</div></div>
+      <div class="stat-card">
+        <div class="label">Active Providers</div>
+        <div class="value blue">${activeProviders} / ${providers.length}</div>
+        <div style="margin-top:8px">
+          <span class="health-badge ${hasHealthy ? 'good' : 'bad'}">
+            ${hasHealthy ? '&#9679; System Healthy' : '&#9679; No Active Providers'}
+          </span>
+        </div>
+      </div>
     `;
-  } catch(e) { console.error('stats error:', e); }
+  } catch(e) {
+    document.getElementById('stats-grid').innerHTML = '<div class="error-state"><p>Failed to load stats.</p><button class="btn" onclick="loadStats()">Retry</button></div>';
+  }
 }
 
 // API Keys
@@ -339,21 +584,23 @@ async function loadKeys() {
       container.innerHTML = '<div class="empty-state"><p>No API keys yet. Create one to get started.</p></div>';
       return;
     }
-    container.innerHTML = `<table>
+    container.innerHTML = `<div class="table-wrap"><table>
       <thead><tr><th>Name</th><th>Key Prefix</th><th>Monthly Spent</th><th>Budget</th><th>Status</th><th>Last Used</th><th>Actions</th></tr></thead>
       <tbody>${keys.map(k => `
         <tr>
           <td>${k.name}</td>
-          <td><code style="font-size:12px;background:var(--bg);padding:2px 6px;border-radius:4px">${k.key_prefix}...${k.key_hash.slice(-6)}</code></td>
+          <td><code style="font-size:12px;background:var(--bg);padding:2px 6px;border-radius:4px">${k.key_prefix}${k.key_hash ? '...' + k.key_hash.slice(-6) : ''}</code></td>
           <td>$${k.monthly_spent.toFixed(4)}</td>
           <td>${k.monthly_budget > 0 ? '$' + k.monthly_budget.toFixed(2) : 'Unlimited'}</td>
           <td>${k.is_revoked ? '<span style="color:var(--danger)">Revoked</span>' : '<span style="color:var(--success)">Active</span>'}</td>
           <td style="color:var(--text-muted);font-size:12px">${k.last_used_at ? new Date(k.last_used_at).toLocaleString() : 'Never'}</td>
-          <td>${!k.is_revoked ? `<button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="revokeKey('${k.id}')">Revoke</button>` : ''}</td>
+          <td>${!k.is_revoked ? `<button class="btn btn-danger btn-sm" onclick="revokeKey('${k.id}')">Revoke</button>` : ''}</td>
         </tr>
       `).join('')}</tbody>
-    </table>`;
-  } catch(e) { console.error('keys error:', e); }
+    </table></div>`;
+  } catch(e) {
+    document.getElementById('keys-list').innerHTML = '<div class="error-state"><p>Failed to load API keys.</p><button class="btn" onclick="loadKeys()">Retry</button></div>';
+  }
 }
 
 async function createKey() {
@@ -411,24 +658,466 @@ function copyNewKey() {
   closeModal('key-modal');
 }
 
-// Providers
+// Provider brand config
+const PROVIDER_BRANDS = {
+  'openai-compatible': { color: '#10a37f', letter: 'O', label: 'OpenAI Compatible' },
+  'anthropic': { color: '#d97757', letter: 'A', label: 'Anthropic' },
+  'gemini': { color: '#4285f4', letter: 'G', label: 'Google Gemini' },
+  'ollama': { color: '#8b5cf6', letter: 'O', label: 'Ollama' },
+  'mistral': { color: '#ff6d00', letter: 'M', label: 'Mistral AI' },
+  'cohere': { color: '#39594d', letter: 'C', label: 'Cohere' },
+  'together': { color: '#6366f1', letter: 'T', label: 'Together AI' },
+  'groq': { color: '#f97316', letter: 'G', label: 'Groq' },
+  'perplexity': { color: '#22c55e', letter: 'P', label: 'Perplexity' },
+  'fireworks': { color: '#ec4899', letter: 'F', label: 'Fireworks AI' },
+  'deepinfra': { color: '#06b6d4', letter: 'D', label: 'DeepInfra' },
+  'replicate': { color: '#a855f7', letter: 'R', label: 'Replicate' }
+};
+
+let editingProviderId = null;
+
+const PROVIDER_DEFAULTS = {
+  'openai-compatible': 'https://api.openai.com/v1',
+  'anthropic': 'https://api.anthropic.com/v1',
+  'gemini': 'https://generativelanguage.googleapis.com/v1beta',
+  'ollama': 'http://localhost:11434',
+  'mistral': 'https://api.mistral.ai/v1',
+  'cohere': 'https://api.cohere.com/v2',
+  'together': 'https://api.together.xyz/v1',
+  'groq': 'https://api.groq.com/openai/v1',
+  'perplexity': 'https://api.perplexity.ai',
+  'fireworks': 'https://api.fireworks.ai/inference/v1',
+  'deepinfra': 'https://api.deepinfra.com/v1/openai',
+  'replicate': 'https://api.replicate.com/v1'
+};
+
+// Provider docs links
+const PROVIDER_DOCS = {
+  'openai-compatible': 'https://platform.openai.com/api-keys',
+  'anthropic': 'https://console.anthropic.com/',
+  'gemini': 'https://aistudio.google.com/apikey',
+  'ollama': 'https://ollama.ai/download',
+  'mistral': 'https://console.mistral.ai/api-keys/',
+  'cohere': 'https://dashboard.cohere.com/api-keys',
+  'together': 'https://api.together.xyz/settings/api-keys',
+  'groq': 'https://console.groq.com/keys',
+  'perplexity': 'https://www.perplexity.ai/settings/api',
+  'fireworks': 'https://fireworks.ai/api-keys',
+  'deepinfra': 'https://deepinfra.com/dash/api_keys',
+  'replicate': 'https://replicate.com/account/api-tokens'
+};
+
+function renderProviderGallery() {
+  const gallery = document.getElementById('provider-gallery');
+  const entries = Object.entries(PROVIDER_BRANDS);
+  gallery.innerHTML = entries.map(([key, brand]) => {
+    const isConnected = window._connectedProviders && window._connectedProviders.includes(key);
+    const hasOauth = key === 'gemini' || key === 'anthropic' || key === 'openai-compatible';
+    return `<div class="prov-gallery-card" onclick="showProviderModal('','${key}')">
+      <div class="g-logo" style="background:${brand.color}">${brand.letter}</div>
+      <div class="g-name">${brand.label}</div>
+      <div class="g-auth">${key === 'ollama' ? 'No auth required' : 'API Key'}</div>
+      ${isConnected ? '<div class="g-badge connected">Connected</div>' : hasOauth ? '<div class="g-badge oauth">OAuth available</div>' : ''}
+    </div>`;
+  }).join('');
+}
+
+function showProviderGallery() {
+  document.getElementById('tab-providers').querySelector('.card:first-child').scrollIntoView({behavior:'smooth'});
+}
+
+function parseModels(models) {
+  if (!models) return [];
+  if (Array.isArray(models)) return models;
+  try { return JSON.parse(models); } catch(e) { return []; }
+}
+
+function formatModels(models) {
+  const arr = parseModels(models);
+  return arr.join(', ');
+}
+
 async function loadProviders() {
+  const container = document.getElementById('providers-list');
+  container.innerHTML = '<div class="loading"><span class="spinner"></span>Loading providers...</div>';
   try {
     const r = await fetch(BASE + '/api/providers');
     const providers = await r.json();
-    const container = document.getElementById('providers-list');
-    container.innerHTML = `<table>
-      <thead><tr><th>Provider</th><th>Status</th><th>Base URL</th><th>Models</th></tr></thead>
-      <tbody>${providers.map(p => `
-        <tr>
-          <td>${p.label || p.provider}</td>
-          <td><span class="status-dot ${p.is_active ? 'online' : 'offline'}"></span>${p.is_active ? 'Active' : 'Inactive'}</td>
-          <td style="font-size:12px;color:var(--text-muted)">${p.base_url || '-'}</td>
-          <td style="font-size:12px">${p.models ? JSON.parse(p.models).join(', ') : '-'}</td>
-        </tr>
-      `).join('')}</tbody>
-    </table>`;
-  } catch(e) { console.error('providers error:', e); }
+    window._connectedProviders = providers.map(p => p.provider);
+    renderProviderGallery();
+    if (!providers.length) {
+      container.innerHTML = '<div class="empty-state"><p>No providers configured. Click "Connect" on a provider below.</p></div>';
+      renderProviderGallery();
+      return;
+    }
+    container.innerHTML = '<div class="prov-grid">' + providers.map(p => {
+      const brand = PROVIDER_BRANDS[p.provider] || { color: '#58a6ff', letter: '?', label: p.provider };
+      const modelsList = formatModels(p.models);
+      return `<div class="prov-card">
+        <div class="prov-card-head">
+          <div class="prov-logo" style="background:${brand.color}">${brand.letter}</div>
+          <div class="info">
+            <div class="name">${escHtml(p.label || brand.label)}</div>
+            <div class="type">${brand.label} ${p.is_active ? '<span class="status-dot online"></span>' : '<span class="status-dot offline"></span>'}</div>
+          </div>
+        </div>
+        <div class="prov-card-body">
+          <div class="row"><span class="lbl">Base URL</span><span class="val"><code>${escHtml(p.base_url || '-')}</code></span></div>
+          <div class="row"><span class="lbl">Models</span><span class="val">${modelsList ? escHtml(modelsList) : '<span style="color:var(--text-muted)">auto</span>'}</span></div>
+          <div class="row"><span class="lbl">Priority</span><span class="val">${p.priority != null ? p.priority : 0}</span></div>
+        </div>
+        <div class="prov-card-actions">
+          <button class="btn btn-sm" onclick="showProviderModal('${p.id}')">Edit</button>
+          <button class="btn btn-sm" style="color:var(--success);border-color:var(--success)" onclick="testExistingProvider('${p.id}')">Test</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteProvider('${p.id}','${escHtml(p.label || brand.label)}')">Delete</button>
+        </div>
+      </div>`;
+    }).join('') + '</div>';
+  } catch(e) {
+    container.innerHTML = '<div class="error-state"><p>Failed to load providers.</p><button class="btn" onclick="loadProviders()">Retry</button></div>';
+  }
+}
+
+// OAuth flow
+let _oauthPollInterval = null;
+
+async function startOAuthFlow() {
+  const btn = document.getElementById('btn-oauth');
+  const provider = btn.dataset.oauthProvider;
+  if (!provider) return;
+
+  btn.disabled = true;
+
+  // Google Gemini OAuth uses a different flow (no PKCE, direct popup + poll)
+  if (provider === 'google') {
+    btn.textContent = 'Opening Google auth...';
+    await startGoogleOAuth(btn);
+    return;
+  }
+
+  // Claude/Codex PKCE OAuth flow
+  btn.textContent = 'Opening browser...';
+
+  try {
+    const r = await fetch(BASE + '/api/oauth/' + provider + '/authorize');
+    const data = await r.json();
+
+    if (data.auth_url) {
+      const popup = window.open(data.auth_url, '_blank', 'width=600,height=700');
+      if (!popup) {
+        showToast('Popup blocked. Open the URL manually:\n' + data.auth_url, 'warn');
+      }
+      btn.textContent = 'Waiting for authorization...';
+      _pollOAuthStatus(data.state, provider, btn);
+    } else {
+      showToast('Failed to start OAuth flow', 'error');
+      btn.disabled = false;
+      btn.textContent = 'Connect with OAuth';
+    }
+  } catch(e) {
+    showToast('OAuth error: ' + e.message, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Connect with OAuth';
+  }
+}
+
+async function startGoogleOAuth(btn) {
+  try {
+    const r = await fetch(BASE + '/api/oauth/google');
+    const data = await r.json();
+    if (!data.configured) {
+      showToast('Google OAuth not configured. Set GOOGLE_OAUTH_CLIENT_ID and GOOGLE_OAUTH_CLIENT_SECRET env vars, or use an API key.', 'warn');
+      btn.disabled = false;
+      btn.textContent = 'Connect with Google OAuth';
+      return;
+    }
+    window.open(data.auth_url, '_blank', 'width=600,height=700');
+    showToast('OAuth window opened. After authorizing, the Gemini provider will be configured automatically.');
+    btn.textContent = 'Connected!';
+    btn.disabled = false;
+    setTimeout(() => {
+      closeProviderModal();
+      loadProviders();
+    }, 3000);
+  } catch(e) {
+    showToast('OAuth error: ' + e.message, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Connect with Google OAuth';
+  }
+}
+
+function _pollOAuthStatus(state, provider, btn) {
+  if (_oauthPollInterval) clearInterval(_oauthPollInterval);
+
+  _oauthPollInterval = setInterval(async () => {
+    try {
+      const r = await fetch(BASE + '/api/oauth/' + provider + '/poll?state=' + encodeURIComponent(state));
+      const data = await r.json();
+
+      if (data.status === 'done') {
+        clearInterval(_oauthPollInterval);
+        _oauthPollInterval = null;
+        btn.textContent = 'Connected!';
+        btn.disabled = false;
+        showToast('Provider connected via OAuth!');
+        closeProviderModal();
+        loadProviders();
+        return;
+      }
+
+      if (data.status === 'error') {
+        clearInterval(_oauthPollInterval);
+        _oauthPollInterval = null;
+        btn.textContent = 'Connect with OAuth';
+        btn.disabled = false;
+        showToast('OAuth failed: ' + (data.error || 'Unknown error'), 'error');
+        return;
+      }
+    } catch(e) {
+      // poll silently
+    }
+  }, 1500);
+}
+
+// Provider instructions helper
+function showInstructions() {
+  const type = document.getElementById('provider-type').value;
+  const el = document.getElementById('provider-instructions');
+  const list = document.getElementById('provider-instructions-list');
+  if (!type || type === 'ollama') { el.style.display = 'none'; return; }
+  const docs = PROVIDER_DOCS[type] || '';
+  const brand = PROVIDER_BRANDS[type] || {};
+  list.innerHTML = `<li>Go to <a href="${docs}" target="_blank" style="color:var(--primary)">${docs}</a></li>
+    <li>Create a new API key (or use an existing one)</li>
+    <li>Copy the key and paste it in the field below</li>`;
+  el.style.display = 'block';
+}
+
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function updateBaseUrl() {
+  const type = document.getElementById('provider-type').value;
+  const urlInput = document.getElementById('provider-base-url');
+  if (type && PROVIDER_DEFAULTS[type]) {
+    urlInput.value = PROVIDER_DEFAULTS[type];
+  }
+}
+
+async function showProviderModal(id, preselectType) {
+  editingProviderId = null;
+  document.getElementById('provider-modal-title').textContent = 'Connect Provider';
+  document.getElementById('btn-save').textContent = 'Connect';
+  document.getElementById('test-result').className = 'test-result';
+  document.getElementById('test-result').style.display = 'none';
+  document.getElementById('provider-instructions').style.display = 'none';
+
+  // Reset form
+  document.getElementById('provider-label').value = '';
+  document.getElementById('provider-type').value = '';
+  document.getElementById('provider-base-url').value = '';
+  document.getElementById('provider-api-key').value = '';
+  document.getElementById('provider-models').value = '';
+  document.getElementById('provider-priority').value = '0';
+  document.getElementById('provider-active').checked = true;
+
+  if (preselectType) {
+    document.getElementById('provider-type').value = preselectType;
+    updateBaseUrl();
+    const brand = PROVIDER_BRANDS[preselectType] || {};
+    document.getElementById('provider-label').value = brand.label || preselectType;
+    document.getElementById('provider-modal-title').innerHTML = brand.letter ? `<span class="prov-logo" style="background:${brand.color};width:28px;height:28px;font-size:14px;display:inline-flex;vertical-align:middle;margin-right:8px">${brand.letter}</span> Connect ${brand.label}` : 'Connect Provider';
+
+    // Show OAuth option for claude/anthropic, codex/openai, and gemini
+    const oauthSection = document.getElementById('oauth-section');
+    if (preselectType === 'anthropic' || preselectType === 'openai-compatible' || preselectType === 'gemini') {
+      oauthSection.style.display = 'block';
+      let oauthProvider, oauthLabel;
+      if (preselectType === 'anthropic') {
+        oauthProvider = 'claude'; oauthLabel = 'Claude';
+      } else if (preselectType === 'openai-compatible') {
+        oauthProvider = 'codex'; oauthLabel = 'OpenAI/Codex';
+      } else {
+        oauthProvider = 'google'; oauthLabel = 'Google Gemini';
+      }
+      document.getElementById('btn-oauth').dataset.oauthProvider = oauthProvider;
+      document.getElementById('btn-oauth').textContent = 'Connect with ' + oauthLabel + ' OAuth';
+    } else {
+      oauthSection.style.display = 'none';
+    }
+  }
+
+  if (id) {
+    // Edit mode — fetch provider data
+    try {
+      const r = await fetch(BASE + '/api/providers');
+      const providers = await r.json();
+      const p = providers.find(pr => pr.id === id);
+      if (!p) { showToast('Provider not found', 'error'); return; }
+
+      editingProviderId = p.id;
+      document.getElementById('provider-modal-title').textContent = 'Edit Provider';
+      document.getElementById('btn-save').textContent = 'Update Provider';
+      document.getElementById('provider-label').value = p.label || '';
+      document.getElementById('provider-type').value = p.provider || '';
+      updateBaseUrl();
+      document.getElementById('provider-base-url').value = p.base_url || '';
+      document.getElementById('provider-api-key').value = '';
+      document.getElementById('provider-models').value = formatModels(p.models);
+      document.getElementById('provider-priority').value = p.priority != null ? p.priority : 0;
+      document.getElementById('provider-active').checked = p.is_active;
+    } catch(e) {
+      showToast('Failed to load provider data: ' + e, 'error');
+      return;
+    }
+  }
+
+  document.getElementById('provider-modal').classList.add('show');
+}
+
+function closeProviderModal() {
+  document.getElementById('provider-modal').classList.remove('show');
+  document.getElementById('oauth-section').style.display = 'none';
+  editingProviderId = null;
+  if (_oauthPollInterval) {
+    clearInterval(_oauthPollInterval);
+    _oauthPollInterval = null;
+  }
+}
+
+async function saveProvider() {
+  const label = document.getElementById('provider-label').value.trim();
+  const provider = document.getElementById('provider-type').value;
+  const base_url = document.getElementById('provider-base-url').value.trim();
+  const api_key = document.getElementById('provider-api-key').value.trim();
+  const modelsRaw = document.getElementById('provider-models').value.trim();
+  const priority = parseInt(document.getElementById('provider-priority').value) || 0;
+  const is_active = document.getElementById('provider-active').checked;
+
+  if (!label) { showToast('Label is required', 'warn'); return; }
+  if (!provider) { showToast('Provider type is required', 'warn'); return; }
+  if (!base_url) { showToast('Base URL is required', 'warn'); return; }
+
+  // For Ollama, no API key needed
+  if (provider === 'ollama' || provider === 'gemini') {
+    // Gemini can use OAuth token or API key
+  }
+
+  const modelsArr = modelsRaw ? modelsRaw.split(',').map(m => m.trim()).filter(Boolean) : [];
+
+  const body = {
+    id: editingProviderId || undefined,
+    provider,
+    label,
+    base_url,
+    models: JSON.stringify(modelsArr),
+    is_active,
+    priority
+  };
+  if (api_key) body.api_key = api_key;
+
+  try {
+    const r = await fetch(BASE + '/api/providers', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body),
+    });
+    if (r.ok) {
+      showToast(editingProviderId ? 'Provider updated!' : 'Provider created!');
+      closeProviderModal();
+      loadProviders();
+    } else {
+      const err = await r.json().catch(() => ({error: 'Request failed'}));
+      showToast('Error: ' + (err.error || r.statusText), 'error');
+    }
+  } catch(e) {
+    showToast('Error saving provider: ' + e, 'error');
+  }
+}
+
+async function deleteProvider(id, label) {
+  if (!confirm('Are you sure you want to delete provider ' + label + '?')) return;
+  try {
+    const r = await fetch(BASE + '/api/providers?id=' + encodeURIComponent(id), {method: 'DELETE'});
+    if (r.ok) {
+      showToast('Provider deleted!');
+      loadProviders();
+    } else {
+      showToast('Error deleting provider', 'error');
+    }
+  } catch(e) {
+    showToast('Error: ' + e, 'error');
+  }
+}
+
+async function testProviderConnection() {
+  const provider = document.getElementById('provider-type').value;
+  const base_url = document.getElementById('provider-base-url').value.trim();
+  const api_key = document.getElementById('provider-api-key').value.trim();
+  const resultDiv = document.getElementById('test-result');
+
+  if (!provider || !base_url) {
+    showToast('Select a provider type and enter a base URL', 'warn');
+    return;
+  }
+
+  resultDiv.style.display = 'block';
+  resultDiv.className = 'test-result';
+  resultDiv.innerHTML = '<span class="spinner"></span> Testing connection...';
+
+  const body = { provider, base_url };
+  if (api_key) body.api_key = api_key;
+
+  try {
+    const r = await fetch(BASE + '/api/providers/test', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body),
+    });
+    const data = await r.json();
+    if (data.success) {
+      resultDiv.className = 'test-result success';
+      resultDiv.innerHTML = '&#10003; Connection successful <span class="latency">(' + data.latency_ms + 'ms)</span>';
+    } else {
+      resultDiv.className = 'test-result fail';
+      resultDiv.innerHTML = '&#10007; ' + escHtml(data.message || 'Connection failed');
+    }
+  } catch(e) {
+    resultDiv.className = 'test-result fail';
+    resultDiv.innerHTML = '&#10007; Error: ' + escHtml(e.message || e);
+  }
+}
+
+async function testExistingProvider(id) {
+  try {
+    const r = await fetch(BASE + '/api/providers');
+    const providers = await r.json();
+    const p = providers.find(pr => pr.id === id);
+    if (!p) { showToast('Provider not found', 'error'); return; }
+
+    const body = {
+      provider: p.provider,
+      base_url: p.base_url
+    };
+
+    showToast('Testing ' + (p.label || p.provider) + '...');
+
+    const tr = await fetch(BASE + '/api/providers/test', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body),
+    });
+    const data = await tr.json();
+    if (data.success) {
+      showToast('&#10003; ' + (p.label || p.provider) + ' OK (' + data.latency_ms + 'ms)');
+    } else {
+      showToast('&#10007; ' + (p.label || p.provider) + ': ' + (data.message || 'Connection failed'), 'error');
+    }
+  } catch(e) {
+    showToast('Error testing provider: ' + e, 'error');
+  }
 }
 
 // Playground
@@ -439,7 +1128,9 @@ async function loadPlaygroundModels() {
     const sel = document.getElementById('playground-model');
     sel.innerHTML = '<option value="">Select a model...</option>' +
       data.data.map(m => `<option value="${m.id}">${m.id}</option>`).join('');
-  } catch(e) { console.error('models error:', e); }
+  } catch(e) {
+    document.getElementById('playground-model').innerHTML = '<option value="">Failed to load models</option>';
+  }
 }
 
 async function runPlayground() {
@@ -469,7 +1160,6 @@ async function runPlayground() {
   }
 }
 
-// Logs
 async function loadLogs() {
   try {
     const r = await fetch(BASE + '/api/logs');
@@ -482,10 +1172,12 @@ async function loadLogs() {
     container.innerHTML = logs.slice(0, 50).map(l => `
       <div class="log-entry">
         <strong>${l.model}</strong> via ${l.provider}
-        <span class="meta">| ${l.duration_ms}ms | $${l.cost_usd.toFixed(6)} | ${l.prompt_tokens + l.completion_tokens} tokens | ${l.streamed ? 'stream' : 'sync'} | ${new Date(l.created_at).toLocaleString()}</span>
+        <span class="meta">| ${l.duration_ms}ms | $${l.cost_usd.toFixed(6)} | ${(l.prompt_tokens || 0) + (l.completion_tokens || 0)} tokens | ${l.streamed ? 'stream' : 'sync'} | ${new Date(l.created_at).toLocaleString()}</span>
       </div>
     `).join('');
-  } catch(e) { console.error('logs error:', e); }
+  } catch(e) {
+    document.getElementById('logs-list').innerHTML = '<div class="error-state"><p>Failed to load logs.</p><button class="btn" onclick="loadLogs()">Retry</button></div>';
+  }
 }
 
 // Recipes
@@ -498,17 +1190,19 @@ async function loadRecipes() {
       container.innerHTML = '<div class="empty-state"><p>No recipes configured. Create a recipe file in ~/.prorouter/recipes/</p></div>';
       return;
     }
-    container.innerHTML = `<table>
+    container.innerHTML = `<div class="table-wrap"><table>
       <thead><tr><th>Name</th><th>Status</th><th>Pipeline</th></tr></thead>
       <tbody>${recipes.map(r => `
         <tr>
           <td>${r.name}</td>
           <td>${r.is_default ? '<span style="color:var(--primary)">Default</span>' : r.is_active ? '<span style="color:var(--success)">Active</span>' : '<span style="color:var(--text-muted)">Inactive</span>'}</td>
-          <td style="font-size:11px;font-family:monospace;max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.pipeline_json}</td>
+          <td style="font-size:11px;font-family:monospace;max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(r.pipeline_json)}</td>
         </tr>
       `).join('')}</tbody>
-    </table>`;
-  } catch(e) { console.error('recipes error:', e); }
+    </table></div>`;
+  } catch(e) {
+    document.getElementById('recipes-list').innerHTML = '<div class="error-state"><p>Failed to load recipes.</p><button class="btn" onclick="loadRecipes()">Retry</button></div>';
+  }
 }
 
 // Auto-refresh stats on overview

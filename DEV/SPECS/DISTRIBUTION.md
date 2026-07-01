@@ -26,24 +26,24 @@ prorouter_<version>_checksums.txt.sig    # Cosign signature
 
 ### 1.2 Homebrew (macOS/Linux)
 
-**Tap Repository:** `github.com/prorouter/homebrew-tap`
+**Tap Repository:** `github.com/FernandoBolzan/homebrew-tap`
 
 ```ruby
 # Formula: prorouter.rb
 class Prorouter < Formula
   desc "Open-source LLM gateway and router"
-  homepage "https://prorouter.dev"
+  homepage "https://github.com/FernandoBolzan/ProRouter"
   version "<version>"
   license "MIT"
 
   on_macos do
-    on_arm { url "https://github.com/prorouter/prorouter/releases/download/v<version>/prorouter_<version>_darwin_arm64.tar.gz" }
-    on_intel { url "https://github.com/prorouter/prorouter/releases/download/v<version>/prorouter_<version>_darwin_amd64.tar.gz" }
+  on_arm { url "https://github.com/FernandoBolzan/ProRouter/releases/download/v<version>/prorouter_<version>_darwin_arm64.tar.gz" }
+  on_intel { url "https://github.com/FernandoBolzan/ProRouter/releases/download/v<version>/prorouter_<version>_darwin_amd64.tar.gz" }
   end
 
   on_linux do
-    on_arm { url "https://github.com/prorouter/prorouter/releases/download/v<version>/prorouter_<version>_linux_arm64.tar.gz" }
-    on_intel { url "https://github.com/prorouter/prorouter/releases/download/v<version>/prorouter_<version>_linux_amd64.tar.gz" }
+  on_arm { url "https://github.com/FernandoBolzan/ProRouter/releases/download/v<version>/prorouter_<version>_linux_arm64.tar.gz" }
+  on_intel { url "https://github.com/FernandoBolzan/ProRouter/releases/download/v<version>/prorouter_<version>_linux_amd64.tar.gz" }
   end
 
   def install
@@ -61,28 +61,28 @@ end
 
 ### 1.3 Scoop (Windows)
 
-**Bucket Repository:** `github.com/prorouter/scoop-bucket`
+**Bucket Repository:** `github.com/FernandoBolzan/scoop-bucket`
 
 ```json
 {
   "version": "<version>",
   "description": "Open-source LLM gateway and router",
-  "homepage": "https://prorouter.dev",
+  "homepage": "https://github.com/FernandoBolzan/ProRouter",
   "license": "MIT",
   "architecture": {
     "64bit": {
-      "url": "https://github.com/prorouter/prorouter/releases/download/v<version>/prorouter_<version>_windows_amd64.zip",
+      "url": "https://github.com/FernandoBolzan/ProRouter/releases/download/v<version>/prorouter_<version>_windows_amd64.zip",
       "hash": "<sha256>"
     }
   },
   "bin": "prorouter.exe",
   "checkver": {
-    "github": "https://github.com/prorouter/prorouter"
+    "github": "https://github.com/FernandoBolzan/ProRouter"
   },
   "autoupdate": {
     "architecture": {
       "64bit": {
-        "url": "https://github.com/prorouter/prorouter/releases/download/v$version/prorouter_$version_windows_amd64.zip"
+        "url": "https://github.com/FernandoBolzan/ProRouter/releases/download/v$version/prorouter_$version_windows_amd64.zip"
       }
     }
   }
@@ -161,7 +161,7 @@ CMD ["serve"]
 
 ### 1.6 One-Line Install Script
 
-**Unix (`curl -fsSL https://get.prorouter.dev | sh`):**
+**Unix (`curl -fsSL https://raw.githubusercontent.com/FernandoBolzan/ProRouter/main/scripts/install.sh | sh`):**
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
@@ -201,7 +201,7 @@ echo "ProRouter installed successfully!"
 echo "Run 'prorouter init' to get started."
 ```
 
-**Windows (`irm https://get.prorouter.dev/install.ps1 | iex`):**
+**Windows (`irm https://raw.githubusercontent.com/FernandoBolzan/ProRouter/main/scripts/install.ps1 | iex`):**
 ```powershell
 # install.ps1
 $repo = "prorouter/prorouter"

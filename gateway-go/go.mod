@@ -1,4 +1,4 @@
-module github.com/prorouter/prorouter
+module github.com/FernandoBolzan/ProRouter
 
 go 1.21
 

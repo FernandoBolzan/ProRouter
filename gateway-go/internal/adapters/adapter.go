@@ -157,6 +157,70 @@ func NewGeminiAdapter(apiKey string) *ProviderAdapter {
 	}
 }
 
+func NewMistralAdapter(apiKey string) *ProviderAdapter {
+	return &ProviderAdapter{
+		Name:    "mistral",
+		BaseURL: "https://api.mistral.ai/v1",
+		APIKey:  apiKey,
+	}
+}
+
+func NewCohereAdapter(apiKey string) *ProviderAdapter {
+	return &ProviderAdapter{
+		Name:    "cohere",
+		BaseURL: "https://api.cohere.com/v2",
+		APIKey:  apiKey,
+	}
+}
+
+func NewTogetherAdapter(apiKey string) *ProviderAdapter {
+	return &ProviderAdapter{
+		Name:    "together",
+		BaseURL: "https://api.together.xyz/v1",
+		APIKey:  apiKey,
+	}
+}
+
+func NewGroqAdapter(apiKey string) *ProviderAdapter {
+	return &ProviderAdapter{
+		Name:    "groq",
+		BaseURL: "https://api.groq.com/openai/v1",
+		APIKey:  apiKey,
+	}
+}
+
+func NewPerplexityAdapter(apiKey string) *ProviderAdapter {
+	return &ProviderAdapter{
+		Name:    "perplexity",
+		BaseURL: "https://api.perplexity.ai",
+		APIKey:  apiKey,
+	}
+}
+
+func NewFireworksAdapter(apiKey string) *ProviderAdapter {
+	return &ProviderAdapter{
+		Name:    "fireworks",
+		BaseURL: "https://api.fireworks.ai/inference/v1",
+		APIKey:  apiKey,
+	}
+}
+
+func NewDeepInfraAdapter(apiKey string) *ProviderAdapter {
+	return &ProviderAdapter{
+		Name:    "deepinfra",
+		BaseURL: "https://api.deepinfra.com/v1/openai",
+		APIKey:  apiKey,
+	}
+}
+
+func NewReplicateAdapter(apiKey string) *ProviderAdapter {
+	return &ProviderAdapter{
+		Name:    "replicate",
+		BaseURL: "https://api.replicate.com/v1",
+		APIKey:  apiKey,
+	}
+}
+
 type chatMsg struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
@@ -194,6 +258,10 @@ func (p *ProviderAdapter) ProviderRequest(method, path string, body []byte, head
 		default:
 			req.Header.Set("Authorization", "Bearer "+p.APIKey)
 		}
+	}
+
+	if p.Name == "deepinfra" || p.Name == "replicate" {
+		req.Header.Set("User-Agent", "ProRouter/0.1")
 	}
 
 	req.Header.Set("Content-Type", "application/json")

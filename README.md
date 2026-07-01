@@ -25,43 +25,35 @@ ProRouter is a high-performance, self-hosted LLM gateway that provides a unified
 
 ### Quick Install (macOS/Linux)
 ```bash
-curl -fsSL https://get.prorouter.dev | sh
+curl -fsSL https://raw.githubusercontent.com/FernandoBolzan/ProRouter/main/scripts/install.sh | sh
 ```
 
 ### Quick Install (Windows PowerShell)
 ```powershell
-iwr https://get.prorouter.dev/install.ps1 | iex
-```
-
-### Homebrew (macOS/Linux)
-```bash
-brew install prorouter/tap/prorouter
-```
-
-### Scoop (Windows)
-```bash
-scoop install prorouter
-```
-
-### Go Install
-```bash
-go install github.com/prorouter/prorouter@latest
+iwr https://raw.githubusercontent.com/FernandoBolzan/ProRouter/main/scripts/install.ps1 | iex
 ```
 
 ### NPM
 ```bash
-npx @prorouter/cli serve
+npx @fernandobolzan/prorouter-cli serve
+```
+
+### Go Install
+```bash
+go install github.com/FernandoBolzan/ProRouter/gateway-go/cmd/prorouter@latest
 ```
 
 ### Docker
 ```bash
-docker run -p 8080:8080 prorouter/gateway
+# Build locally
+git clone https://github.com/FernandoBolzan/ProRouter
+cd ProRouter && docker compose up -d
 ```
 
 ### Build from Source
 ```bash
-git clone https://github.com/prorouter/prorouter
-cd prorouter
+git clone https://github.com/FernandoBolzan/ProRouter
+cd ProRouter
 make build
 ```
 

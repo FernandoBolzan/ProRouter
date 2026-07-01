@@ -1,11 +1,8 @@
 #!/usr/bin/env node
-// Post-install script: download the correct platform binary
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
-const { createGunzip } = require('zlib');
-const { Extract } = require('tar-stream');
-const { createWriteStream } = require('fs');
+const { execSync } = require('child_process');
 
 const { platform, arch } = process;
 const version = require('../package.json').version;
@@ -28,7 +25,7 @@ if (!target) {
 const isWin = platform === 'win32';
 const ext = isWin ? 'zip' : 'tar.gz';
 const filename = `prorouter_${version}_${target}.${ext}`;
-const url = `https://github.com/prorouter/prorouter/releases/download/v${version}/${filename}`;
+const url = `https://github.com/FernandoBolzan/ProRouter/releases/download/v${version}/${filename}`;
 
 const binDir = path.join(__dirname, '..', 'bin');
 const binaryPath = path.join(binDir, isWin ? 'prorouter.exe' : 'prorouter');
@@ -39,46 +36,40 @@ if (!fs.existsSync(binDir)) {
 
 console.log(`Downloading ProRouter v${version} (${target})...`);
 
+const downloadPath = path.join(binDir, filename);
+const file = fs.createWriteStream(downloadPath);
+
 https.get(url, (res) => {
   if (res.statusCode !== 200) {
     console.error(`Download failed: HTTP ${res.statusCode}`);
-    // Create a stub that prints a helpful message
-    fs.writeFileSync(binaryPath, `#!/usr/bin/env node\nconsole.log("ProRouter binary not found for ${target}. Please install via 'brew install prorouter/tap/prorouter' or download from https://github.com/prorouter/prorouter/releases");\n`);
-    fs.chmodSync(binaryPath, 0o755);
-    return;
+    console.error(`URL: ${url}`);
+    console.error('Please download manually from https://github.com/FernandoBolzan/ProRouter/releases');
+    file.close();
+    fs.unlinkSync(downloadPath);
+    process.exit(1);
   }
 
-  if (isWin) {
-    const chunks = [];
-    res.on('data', (chunk) => chunks.push(chunk));
-    res.on('end', () => {
-      const AdmZip = require('adm-zip');
-      const zip = new AdmZip(Buffer.concat(chunks));
-      const entry = zip.getEntry('prorouter.exe');
-      if (entry) {
-        fs.writeFileSync(binaryPath, entry.getData());
-        fs.chmodSync(binaryPath, 0o755);
-        console.log('ProRouter binary installed.');
-      }
-    });
-  } else {
-    const gunzip = createGunzip();
-    const extract = tarfs.extract();
-    extract.on('entry', (header, stream, next) => {
-      if (header.name === 'prorouter') {
-        const ws = fs.createWriteStream(binaryPath, { mode: 0o755 });
-        stream.pipe(ws);
-        ws.on('finish', () => {
-          console.log('ProRouter binary installed.');
-          next();
-        });
+  res.pipe(file);
+  file.on('finish', () => {
+    file.close();
+    try {
+      if (isWin) {
+        execSync(`powershell -NoProfile "Expand-Archive -Path '${downloadPath}' -DestinationPath '${binDir}' -Force"`, { stdio: 'pipe' });
+        const exePath = path.join(binDir, 'prorouter.exe');
+        if (fs.existsSync(exePath)) {
+          fs.renameSync(exePath, binaryPath);
+        }
       } else {
-        stream.resume();
-        next();
+        execSync(`tar -xzf "${downloadPath}" -C "${binDir}"`, { stdio: 'pipe' });
       }
-    });
-    res.pipe(gunzip).pipe(extract);
-  }
+      fs.unlinkSync(downloadPath);
+      console.log('ProRouter binary installed successfully.');
+    } catch (err) {
+      console.error('Extraction failed:', err.message);
+      process.exit(1);
+    }
+  });
 }).on('error', (err) => {
   console.error('Download error:', err.message);
+  process.exit(1);
 });

@@ -13,9 +13,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/prorouter/prorouter/internal/adapters"
-	"github.com/prorouter/prorouter/internal/database"
-	"github.com/prorouter/prorouter/internal/models"
+	"github.com/FernandoBolzan/ProRouter/internal/adapters"
+	"github.com/FernandoBolzan/ProRouter/internal/database"
+	"github.com/FernandoBolzan/ProRouter/internal/middleware"
+	"github.com/FernandoBolzan/ProRouter/internal/models"
 )
 
 type Proxy struct {
@@ -67,7 +68,7 @@ func (p *Proxy) HandleChatCompletions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get API key info for audit
-	apiKeyID := r.Context().Value("api_key_id").(string)
+	apiKeyID := r.Context().Value(middleware.APIKeyIDKey).(string)
 
 	// Transform request if needed
 	reqBody := body
@@ -88,6 +89,10 @@ func (p *Proxy) HandleChatCompletions(w http.ResponseWriter, r *http.Request) {
 		apiPath = "/messages"
 	} else if providerName == "gemini" {
 		apiPath = "/models/" + modelName + ":streamGenerateContent?alt=sse"
+	} else if providerName == "cohere" {
+		apiPath = "/chat"
+	} else if providerName == "replicate" {
+		apiPath = "/models/" + modelName + "/predictions"
 	}
 
 	// Make request to provider
@@ -226,6 +231,41 @@ func (p *Proxy) HandleListModels(w http.ResponseWriter, r *http.Request) {
 			}, modelEntry{
 				ID: "mistral", Object: "model", Created: time.Now().Unix(), OwnedBy: "ollama",
 			})
+		case "mistral":
+			models = append(models,
+				modelEntry{ID: "mistral-tiny", Object: "model", Created: time.Now().Unix(), OwnedBy: "mistral"},
+				modelEntry{ID: "mistral-small", Object: "model", Created: time.Now().Unix(), OwnedBy: "mistral"},
+				modelEntry{ID: "mistral-medium", Object: "model", Created: time.Now().Unix(), OwnedBy: "mistral"},
+				modelEntry{ID: "mistral-large", Object: "model", Created: time.Now().Unix(), OwnedBy: "mistral"},
+			)
+		case "cohere":
+			models = append(models,
+				modelEntry{ID: "command-r", Object: "model", Created: time.Now().Unix(), OwnedBy: "cohere"},
+				modelEntry{ID: "command-r-plus", Object: "model", Created: time.Now().Unix(), OwnedBy: "cohere"},
+			)
+		case "together":
+			models = append(models,
+				modelEntry{ID: "llama-3.1-405b-together", Object: "model", Created: time.Now().Unix(), OwnedBy: "together"},
+			)
+		case "groq":
+			models = append(models,
+				modelEntry{ID: "llama-3.3-70b-groq", Object: "model", Created: time.Now().Unix(), OwnedBy: "groq"},
+				modelEntry{ID: "mixtral-8x7b-groq", Object: "model", Created: time.Now().Unix(), OwnedBy: "groq"},
+			)
+		case "perplexity":
+			models = append(models,
+				modelEntry{ID: "sonar-pro", Object: "model", Created: time.Now().Unix(), OwnedBy: "perplexity"},
+				modelEntry{ID: "sonar-reasoning", Object: "model", Created: time.Now().Unix(), OwnedBy: "perplexity"},
+			)
+		case "fireworks":
+			models = append(models,
+				modelEntry{ID: "accounts/fireworks/models/llama-v3p1-405b", Object: "model", Created: time.Now().Unix(), OwnedBy: "fireworks"},
+			)
+		case "deepinfra":
+			models = append(models,
+				modelEntry{ID: "deepinfra-llama", Object: "model", Created: time.Now().Unix(), OwnedBy: "deepinfra"},
+				modelEntry{ID: "deepinfra-mixtral", Object: "model", Created: time.Now().Unix(), OwnedBy: "deepinfra"},
+			)
 		}
 	}
 
@@ -269,6 +309,20 @@ func resolveProviderModel(model string) (provider, modelName string) {
 		return "gemini", model
 	case "deepseek-chat", "deepseek-coder":
 		return "deepseek", model
+	case "mistral-tiny", "mistral-small", "mistral-medium", "mistral-large":
+		return "mistral", model
+	case "command-r", "command-r-plus", "command-nightly":
+		return "cohere", model
+	case "together-mix", "llama-3.1-405b-together":
+		return "together", model
+	case "llama-3.3-70b-groq", "mixtral-8x7b-groq", "deepseek-r1-groq":
+		return "groq", model
+	case "sonar-pro", "sonar-reasoning":
+		return "perplexity", model
+	case "accounts/fireworks/models/llama-v3p1-405b":
+		return "fireworks", model
+	case "deepinfra-llama", "deepinfra-mixtral":
+		return "deepinfra", model
 	default:
 		return "openai", model
 	}

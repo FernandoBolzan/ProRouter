@@ -1,6 +1,6 @@
 # Binaries
-prorouter
-prorouter.exe
+/prorouter
+/prorouter.exe
 *.exe
 *.test
 *.out
@@ -54,6 +54,9 @@ coverage/
 .cursor/
 .claude/
 .opencode/
+
+# Backup files
+*~
 
 # OS
 .DS_Store
